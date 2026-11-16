@@ -1,0 +1,64 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/sora';
+@import '@fontsource/orbitron/600.css';
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --page: #F5F8FF;
+  --surface: #FFFFFF;
+  --ink: #071B45;
+  --muted: #425982;
+  --line: #C7D6F4;
+  --brand: #0E4EB2;
+  --brand-strong: #0A3D91;
+}
+
+.dark {
+  color-scheme: dark;
+  --page: #000521;
+  --surface: #020C47;
+  --ink: #F5F8FF;
+  --muted: #B7C8E7;
+  --line: #011F65;
+  --brand: #2078CF;
+  --brand-strong: #0E4EB2;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --font-sora: 'Sora Variable', sans-serif;
+  --font-sans: 'Inter Variable', sans-serif;
+  --font-orbitron: 'Orbitron', sans-serif;
+}
+
+html {
+  background: var(--page);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-sans);
+}
+
+button {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
