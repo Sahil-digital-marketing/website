@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000521" />
+    <meta name="description" content="SAHIL Digital Marketing helps Indian businesses build a stronger digital presence through strategy, creativity, and technology." />
     <title>SAHIL Digital Marketing</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem('sahil-theme')
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark)
+        document.documentElement.classList.toggle('dark', isDark)
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

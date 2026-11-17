@@ -7,6 +7,7 @@
     "dev": "vite --mode development",
     "build": "tsc --noEmit && vite build --mode production",
     "typecheck": "tsc --noEmit",
+    "check:homepage": "node tools/check-homepage.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

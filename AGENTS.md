@@ -15,10 +15,9 @@ secrets, database access, or server implementation. Keep `.github/CODEOWNERS`.
 
 ## Environments and Secrets
 
-Vite loads `.env.development` for development and `.env.production` for builds.
-Keep public defaults in `.env.example` and overrides in ignored
-`.env.local`. `VITE_` values are public; production secrets belong in hosting
-or untracked `server/.env` and are named in `server/.env.example`.
+Vite loads `.env.development` and `.env.production`. Keep public defaults in
+`.env.example` and overrides in ignored `.env.local`. `VITE_` values are public;
+production secrets belong in hosting or untracked `server/.env`.
 
 ## Coding Rules
 
@@ -31,27 +30,31 @@ or untracked `server/.env` and are named in `server/.env.example`.
 - Remove unused imports, variables, and dead code in files you touch.
 - Change only what the task requires; keep every change easy to maintain.
 
+## Dependency Policy
+
+Own UI in `src/`; do not import third-party UI component or design-system
+packages. Approved foundations are React, Vite, Tailwind, and Fontsource. Add
+any dependency only after checking maintenance, security, licence, bundle cost,
+and a practical fallback.
+
 ## Astryx Design Workflow
 
 For substantial UI, use the supplied [Astryx study](C:/Users/Akash/Downloads/Astryx-Study-and-Audit-2026-11-14.md).
 If available, use `astryx search "<task>"` then `astryx component <Name>
---dense`. It is React 19+ beta guidance; do not add StyleX or migrate without
-approval.
+--dense`. It is guidance only: do not add StyleX or migrate without approval.
 
 ## Visual System
 
 Use Cobalt Horizon: `#000521`, `#020C47`, `#011F65`, `#0E4EB2`, and
-`#2078CF`; light mode uses `#F5F8FF`, `#FFFFFF`, `#071B45`, `#425982`, and
-`#C7D6F4`. Use semantic variables and 4.5:1 text contrast. Use Sora headings,
-Inter body copy, and Orbitron for short labels. Motion uses transform/opacity,
-respects reduced motion, and all controls need visible focus and 44px targets.
+`#2078CF`; light uses `#F5F8FF`, `#FFFFFF`, `#071B45`, `#425982`, and
+`#C7D6F4`. Use semantic variables, 4.5:1 contrast, Sora headings, Inter body,
+and Orbitron labels. Respect reduced motion; controls need focus and 44px targets.
 
 ## Tailwind & Themes
 
-Tailwind CSS v4.3 uses the Vite plugin. Keep `@import "tailwindcss";`, the
-class-based `dark` variant, and `@theme inline` in `src/styles.css`. Avoid
-legacy Tailwind/PostCSS configuration unless a plugin needs it. Preserve the
-`.dark` selection and system preference.
+Tailwind v4.3 uses the Vite plugin. Keep `@import "tailwindcss";`, class-based
+`dark`, and `@theme inline` in `src/styles.css`. Avoid legacy Tailwind/PostCSS
+configuration; preserve `.dark` and system preference.
 
 ## Commands and Quality
 
