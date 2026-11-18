@@ -1,37 +1,34 @@
-import { navigationLinks, services } from '../data/landing'
-import { ArrowIcon } from './ArrowIcon'
-import { Brand } from './Brand'
+import { contactLinks, navigationLinks, services } from '../data/landing'
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div className="section footer-inner">
-        <div className="footer-main">
-          <div className="footer-brand">
-            <Brand />
-            <p>Strategy, creativity, and technology.<br />A considered way forward.</p>
-          </div>
-          <nav className="footer-nav" aria-label="Footer navigation">
-            <span className="footer-label">EXPLORE</span>
-            {navigationLinks.map((link) => (
-              <a href={link.href} key={link.href}>{link.label}</a>
-            ))}
-          </nav>
-          <div className="footer-services">
-            <span className="footer-label">OUR EXPERTISE</span>
-            {services.map((service) => (
-              <a href="#services" key={service.title}>{service.title}</a>
-            ))}
-          </div>
-          <a className="back-to-top" href="#top" aria-label="Back to top">
-            <ArrowIcon />
-          </a>
+      <p className="footer-name" aria-hidden="true">SAHIL</p>
+      <div className="footer-inner">
+        <div className="footer-places">
+          <h2 className="visually-hidden">Contact SAHIL Digital Marketing</h2>
+          <a href={`mailto:${contactLinks.email}`}>{contactLinks.email}</a>
+          <a href={contactLinks.whatsappHref} target="_blank" rel="noopener noreferrer">WhatsApp {contactLinks.whatsappNumber}</a>
+          <a href={contactLinks.instagramHref} target="_blank" rel="noopener noreferrer">Instagram</a>
         </div>
-        <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} SAHIL Digital Marketing</span>
-          <span>Signature of Success.</span>
-          <span>INDIA</span>
+        <nav className="footer-column" aria-label="Footer navigation">
+          <h3>Explore</h3>
+          {navigationLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+        </nav>
+        <div className="footer-column">
+          <h3>Services</h3>
+          {services.map((service) => <a href="#explore" key={service.id}>{service.title}</a>)}
         </div>
+        <div className="footer-column">
+          <h3>Studio</h3>
+          <p>SAHIL Digital Marketing</p>
+          <p>Signature of Success.</p>
+          <p>Serving businesses across India.</p>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <span>© {new Date().getFullYear()} SAHIL Digital Marketing. All rights reserved.</span>
+        <a href="#top">Back to top</a>
       </div>
     </footer>
   )

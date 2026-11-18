@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import type { EagleScene } from '../features/landing/eagle/create-eagle-scene'
-import { EagleStill } from './EagleStill'
+import type { EagleScene } from '../features/landing/eagle/create-particle-eagle-scene'
+
+const markUrl = '/brand/sahil-mark.webp'
 
 export function HeroArt() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -14,13 +15,18 @@ export function HeroArt() {
 
     async function loadScene() {
       try {
-        const { createEagleScene } = await import('../features/landing/eagle/create-eagle-scene')
+        const { createParticleEagleScene } = await import('../features/landing/eagle/create-particle-eagle-scene')
         if (cancelled || !canvasRef.current) return
-        scene = createEagleScene(canvasRef.current, () => {
-          setIsReady(false)
-          scene?.dispose()
-          sceneRef.current = null
+        scene = await createParticleEagleScene(canvasRef.current, {
+          markUrl,
+          reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+          onFailure: () => {
+            setIsReady(false)
+            scene?.dispose()
+            sceneRef.current = null
+          },
         })
+        if (cancelled) return scene.dispose()
         sceneRef.current = scene
         setIsReady(true)
       } catch {
@@ -43,13 +49,10 @@ export function HeroArt() {
 
   return (
     <div className="hero-art">
-      <div className="eagle-halo" aria-hidden="true" />
-      <span className="eagle-orbit" aria-hidden="true" />
-      <div className="eagle-stage" role="img" aria-label="A sculptural blue eagle spreading its wings">
-        {!isReady && <EagleStill />}
+      <div className="eagle-stage" role="img" aria-label="The SAHIL eagle, formed from thousands of points of chrome and blue light">
+        {!isReady && <img className="eagle-still" src={markUrl} width="452" height="511" alt="" />}
         <canvas ref={canvasRef} className={isReady ? 'eagle-canvas is-ready' : 'eagle-canvas'} aria-hidden="true" />
       </div>
-      <span className="art-word" aria-hidden="true">RISE</span>
       {isReady && (
         <button className="motion-toggle" type="button" aria-pressed={isPaused} onClick={toggleMotion}>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">

@@ -1,19 +1,19 @@
+import { useRef } from 'react'
 import { faqs } from '../../data/landing'
+import { useReveal } from '../../lib/useReveal'
 
 export function FaqSection() {
+  const sectionRef = useRef<HTMLElement>(null)
+  useReveal(sectionRef)
+
   return (
-    <section className="section faq-section" id="faq" aria-labelledby="faq-title">
-      <div className="faq-heading">
-        <p className="section-label">04 / BEFORE WE BEGIN</p>
-        <h2 id="faq-title">A little{' '}<br /><span className="muted-heading">more clarity.</span></h2>
-        <p>Good partnerships start with the right questions.</p>
-      </div>
-      <div className="faq-list">
+    <section className="section faq" id="faq" aria-labelledby="faq-title" ref={sectionRef}>
+      <h2 id="faq-title">Questions, answered.</h2>
+      <div className="faq-text" data-reveal-group>
         {faqs.map((faq) => (
-          <details className="faq-item" key={faq.question}>
-            <summary>{faq.question}<span className="faq-plus" aria-hidden="true" /></summary>
-            <p>{faq.answer}</p>
-          </details>
+          <p className="faq-item" key={faq.question} data-reveal>
+            <strong>{faq.question}</strong> {faq.answer}
+          </p>
         ))}
       </div>
     </section>

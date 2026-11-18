@@ -42,9 +42,9 @@ export function MobileNavigation() {
       </button>
       {isOpen && (
         <nav id="mobile-navigation-panel" className="mobile-navigation-panel" aria-label="Mobile navigation">
-          {navigationLinks.map((link, index) => (
+          {navigationLinks.map((link) => (
             <a href={link.href} key={link.href} onClick={() => setIsOpen(false)}>
-              <span>0{index + 1}</span>{link.label}<ArrowIcon />
+              {link.label}<ArrowIcon />
             </a>
           ))}
           <a className="button button-primary" href="#contact" onClick={() => setIsOpen(false)}>Start a Project <ArrowIcon /></a>
