@@ -15,24 +15,40 @@ npm run dev
 ## Homepage ownership
 
 - `App.tsx` selects the page for the URL; `pages/LandingPage.tsx` composes sections.
-- `src/components/` owns navigation, branding, controls, the form, and the eagle presentation.
-- `src/features/landing/` owns page sections and the eagle's geometry/rendering.
-- `src/data/landing.ts` owns services, navigation destinations, process steps, and FAQs.
+- `src/components/` owns navigation, branding, controls, the form, the reader dialog, and the eagle presentation.
+- `src/features/landing/` owns page sections and the particle eagle renderer.
+- `src/data/landing.ts` owns services (with their detail), about copy, field notes, process, FAQs, and contact links.
+- `src/lib/` owns the motion layer: Lenis smooth scroll driven by GSAP's ticker, scroll reveals, and the magnetic CTA.
 - `src/styles.css` owns brand tokens, light/dark themes, responsive layout, and CSS motion.
+- `public/brand/` holds the approved SAHIL logo (colour and one-colour), the eagle mark, favicons, and the share image.
 
-The hero uses an original faceted eagle sculpture, rendered with native WebGL2.
-The renderer is loaded separately, caps pixel density, pauses offscreen or when
-the tab is hidden, and releases its graphics resources on unmount. Reduced
-motion produces a still scene. If WebGL fails, an owned SVG illustration is shown.
-There are no added runtime dependencies or third-party UI components.
+## Design direction: Midnight Chrome
+
+An editorial "printed annual" layout (12-column grid, an axis at about 42%, whole
+sections in flat colour) on the Cobalt Horizon palette, with the logo's chrome
+carried by the hero. Sora and Inter only. Square media, pill buttons, no
+gradients, glass, hairlines, eyebrow labels, or shadows at rest.
+
+The hero is the SAHIL eagle drawn by ~15,000 WebGL2 points sampled from the
+logo mark, keeping its own chrome and blue. The points gather on load, part
+around the pointer, and drift away as the hero scrolls. The renderer is loaded
+separately, caps pixel density, pauses offscreen or when the tab is hidden, and
+releases its graphics resources on unmount. Reduced motion shows the settled
+eagle without travel; if WebGL fails, the logo mark itself is shown.
+
+Motion dependencies: `gsap` (ScrollTrigger, SplitText; GSAP Standard License,
+free for commercial use) and `lenis` (MIT). Everything is skipped under
+`prefers-reduced-motion`.
 
 ## Content still needed
 
-The header uses a text wordmark pending the original approved logo. The eagle
-is decorative artwork, not a replacement business logo. Enquiry delivery is not
-connected: native field validation and local review work, but no form details
-are transmitted or saved. Approved contact details, portfolio work, testimonials,
-and backend integrations have not been invented.
+Enquiry delivery is not connected: native field validation and local review work,
+but no form details are transmitted or saved. Field-note and contact photographs
+are placeholder atmosphere from picsum.photos (Unsplash licence) and should be
+replaced with the studio's own pictures. Contact details, "Udyam MSME" wording,
+service deliverables (Website Development in particular), and field-note copy are
+carried over from the current site and need founder confirmation. No portfolio
+work, testimonials, or statistics have been invented.
 
 ## Browser checks
 

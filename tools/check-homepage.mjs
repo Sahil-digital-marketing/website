@@ -160,8 +160,23 @@ try {
   await waitFor(() => evaluate('Boolean(document.querySelector(".theme-toggle"))'), 'persisted theme')
   assert.equal(await evaluate('document.documentElement.classList.contains("dark")'), true)
 
-  await evaluate('document.querySelector(".faq-item summary").click()')
-  assert.equal(await evaluate('document.querySelector(".faq-item").open'), true)
+  // The live thing: choosing a service updates the panel and carries into the enquiry form.
+  await click('#tab-seo')
+  await waitFor(() => evaluate('document.querySelector("#tab-seo").getAttribute("aria-selected") === "true"'), 'service tab selects')
+  assert.match(await evaluate('document.querySelector(".explorer-tagline").textContent'), /Get found/)
+  await evaluate('document.querySelector(".explorer-start").click()')
+  await waitFor(() => evaluate('document.querySelector("[name=\\"service\\"]").value === "seo"'), 'service preselected in form')
+  // Field notes open in a native dialog and close on Escape.
+  await delay(1600) // let the smooth anchor scroll to #contact finish first
+  await evaluate('scrollTo({top:0,behavior:"instant"})')
+  await delay(300)
+  await click('.hero-card')
+  await waitFor(() => evaluate('document.querySelector("dialog.reader").open'), 'reader opens')
+  await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
+  await waitFor(() => evaluate('!document.querySelector("dialog.reader").open'), 'reader closes')
+  assert.ok(await evaluate('document.querySelectorAll(".faq-item").length') >= 8, 'FAQ answers are on the page')
+  await evaluate('document.querySelector("form").reset()')
   assert.equal(await evaluate('document.querySelector("form").checkValidity()'), false)
   await evaluate(`(() => { for (const [name,value] of Object.entries({name:'Test Business',email:'test@example.com',project:'A business website and marketing enquiry.'})) document.querySelector('[name="'+name+'"]').value=value; document.querySelector('[name="service"]').selectedIndex=1; document.querySelector('form').requestSubmit() })()`)
   assert.match(await evaluate('document.querySelector(".form-status").textContent'), /not sent or saved/)
@@ -179,8 +194,8 @@ try {
   assert.equal(await evaluate('document.querySelector(".eagle-canvas").classList.contains("is-ready")'), false)
   await screenshot('webgl-fallback')
   assert.equal(runtimeErrors.length, 0, 'No runtime exceptions')
-  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, themePersistence: 'pass', faq: 'pass', formPreview: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
-  console.log('Theme persistence, FAQ, form validation/preview, reduced motion, WebGL fallback, runtime errors: passed')
+  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, themePersistence: 'pass', serviceExplorer: 'pass', reader: 'pass', faq: 'pass', formPreview: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
+  console.log('Theme persistence, service explorer, reader dialog, FAQ, form validation/preview, reduced motion, WebGL fallback, runtime errors: passed')
   console.log(`Screenshots: ${output}`)
 } finally {
   socket?.close()
