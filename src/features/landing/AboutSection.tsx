@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { about } from '../../data/landing'
 import { useReveal } from '../../lib/useReveal'
+import { ArrowIcon } from '../../components/ArrowIcon'
 
 export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -23,6 +24,7 @@ export function AboutSection() {
           <strong>{about.lead}</strong> {about.statement}
         </p>
         <p className="about-statement about-statement--soft" data-reveal>{about.philosophy}</p>
+        <a className="text-link" href="/about" data-reveal>More about us <ArrowIcon /></a>
       </div>
     </section>
   )

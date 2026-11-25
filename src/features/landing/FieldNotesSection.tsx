@@ -1,5 +1,8 @@
 import { useRef } from 'react'
 import { ArrowIcon } from '../../components/ArrowIcon'
+import { EditorialImage } from '../../components/EditorialImage'
+import { SectionPhoto } from '../../components/SectionPhoto'
+import { homeImages } from '../../data/homeImages'
 import { fieldNotes, type FieldNote } from '../../data/landing'
 import { useReveal } from '../../lib/useReveal'
 
@@ -12,7 +15,7 @@ export function FieldNotesSection({ onOpenNote }: FieldNotesSectionProps) {
   useReveal(sectionRef)
 
   return (
-    <section className="colour-page notes" id="notes" aria-labelledby="notes-title" ref={sectionRef}>
+    <section className="colour-page notes photo-field" id="notes" aria-labelledby="notes-title" ref={sectionRef}>
       <div className="section notes-inner">
         <div className="notes-head" data-reveal-group>
           <h2 id="notes-title" data-reveal>Field notes from the studio.</h2>
@@ -22,7 +25,7 @@ export function FieldNotesSection({ onOpenNote }: FieldNotesSectionProps) {
           {fieldNotes.map((note, index) => (
             <li className={`note-tile note-tile--${index + 1}`} key={note.id} data-reveal>
               <button type="button" onClick={() => onOpenNote(note)}>
-                <img src={note.image.src} width="1200" height="900" alt={note.image.alt} loading="lazy" />
+                <EditorialImage image={note.image} sizes="(max-width: 760px) 92vw, 48vw" />
                 <span className="note-bar">
                   <span className="note-topic">{note.topic}, {note.readTime}</span>
                   <span className="note-title">{note.title}</span>
@@ -31,7 +34,8 @@ export function FieldNotesSection({ onOpenNote }: FieldNotesSectionProps) {
               </button>
             </li>
           ))}
-          <li className="note-tile note-tile--field" aria-hidden="true" data-reveal>
+          <li className="note-tile note-tile--field photo-field" aria-hidden="true" data-reveal>
+            <SectionPhoto image={homeImages.web} />
             <span>Less noise. More momentum.</span>
           </li>
         </ul>

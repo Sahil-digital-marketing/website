@@ -5,7 +5,6 @@ import { SiteHeader } from '../components/SiteHeader'
 import type { FieldNote } from '../data/landing'
 import { AboutSection } from '../features/landing/AboutSection'
 import { ContactSection } from '../features/landing/ContactSection'
-import { FaqSection } from '../features/landing/FaqSection'
 import { FieldNotesSection } from '../features/landing/FieldNotesSection'
 import { HeroSection } from '../features/landing/HeroSection'
 import { ProcessSection } from '../features/landing/ProcessSection'
@@ -15,8 +14,7 @@ import { VisionSection } from '../features/landing/VisionSection'
 import { ScrollTrigger, startSmoothScroll } from '../lib/motion'
 
 export function LandingPage() {
-  const [exploredService, setExploredService] = useState('social')
-  const [enquiryService, setEnquiryService] = useState('')
+  const [exploredService, setExploredService] = useState('web')
   const [openNote, setOpenNote] = useState<FieldNote | null>(null)
 
   useEffect(() => {
@@ -25,6 +23,9 @@ export function LandingPage() {
     const refresh = () => ScrollTrigger.refresh()
     window.addEventListener('load', refresh)
     void document.fonts?.ready.then(refresh)
+    if (window.location.hash === '#contact') {
+      void document.fonts.ready.then(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'instant' }))
+    }
     return () => {
       stop()
       window.removeEventListener('load', refresh)
@@ -39,12 +40,11 @@ export function LandingPage() {
         <HeroSection onOpenNote={setOpenNote} />
         <AboutSection />
         <VisionSection />
-        <ServicesSection onExplore={setExploredService} />
+        <ServicesSection />
         <ProcessSection />
-        <ServiceExplorer selectedId={exploredService} onSelect={setExploredService} onStart={setEnquiryService} />
+        <ServiceExplorer selectedId={exploredService} onSelect={setExploredService} />
         <FieldNotesSection onOpenNote={setOpenNote} />
-        <FaqSection />
-        <ContactSection selectedService={enquiryService} />
+        <ContactSection />
       </main>
       <SiteFooter />
       <ReaderDialog note={openNote} onClose={() => setOpenNote(null)} />

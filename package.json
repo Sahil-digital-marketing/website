@@ -8,6 +8,8 @@
     "build": "tsc --noEmit && vite build --mode production",
     "typecheck": "tsc --noEmit",
     "check:homepage": "node tools/check-homepage.mjs",
+    "check:services": "node tools/check-homepage.mjs --services",
+    "check:process": "node tools/check-homepage.mjs --process",
     "preview": "vite preview"
   },
   "dependencies": {

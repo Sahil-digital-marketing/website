@@ -4,6 +4,7 @@ import { Brand } from './Brand'
 import { MobileNavigation } from './MobileNavigation'
 import { Navbar } from './Navbar'
 import { ThemeToggle } from './ThemeToggle'
+import { EnquiryLink } from './EnquiryLink'
 
 export function SiteHeader() {
   const ctaRef = useMagnetic<HTMLAnchorElement>()
@@ -15,7 +16,7 @@ export function SiteHeader() {
         <Navbar />
         <div className="header-actions">
           <ThemeToggle />
-          <a ref={ctaRef} className="button button-primary button-small" href="#contact">Start a Project <ArrowIcon /></a>
+          <EnquiryLink ref={ctaRef} className="button button-primary button-small">Start a Project <ArrowIcon /></EnquiryLink>
           <MobileNavigation />
         </div>
       </div>

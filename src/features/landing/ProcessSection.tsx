@@ -1,37 +1,26 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { processSteps } from '../../data/landing'
-import { gsap, prefersReducedMotion } from '../../lib/motion'
+import { useReveal } from '../../lib/useReveal'
+import { ArrowIcon } from '../../components/ArrowIcon'
 
 export function ProcessSection() {
   const sectionRef = useRef<HTMLElement>(null)
-
-  /* Each line settles onto its step of the staircase as it scrolls into view,
-     tied to the scrollbar so the descent reads as one movement. */
-  useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section || prefersReducedMotion()) return
-    const context = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.process-step').forEach((step) => {
-        gsap.from(step, {
-          y: 48,
-          autoAlpha: 0.08,
-          ease: 'none',
-          scrollTrigger: { trigger: step, start: 'top 92%', end: 'top 55%', scrub: 0.8 },
-        })
-      })
-    }, section)
-    return () => context.revert()
-  }, [])
+  useReveal(sectionRef)
 
   return (
     <section className="section process" id="process" aria-labelledby="process-title" ref={sectionRef}>
-      <ol className="process-steps">
+      <div className="process-heading-row">
+        <h2 id="process-title" className="process-heading">How we work</h2>
+        <a className="text-link" href="/process">Explore our process <ArrowIcon /></a>
+      </div>
+      <ol className="process-steps" data-reveal-group>
         {processSteps.map((step, index) => (
-          <li className="process-step" key={step.line}>
-            {index === 0
-              ? <h2 id="process-title" className="process-line">{step.line}</h2>
-              : <p className="process-line">{step.line}</p>}
-            <p className="process-detail">{step.detail}</p>
+          <li className="process-step" key={step.line} data-reveal>
+            <span className="process-number" aria-hidden="true">0{index + 1}</span>
+            <div>
+              <h3 className="process-line">{step.line}</h3>
+              <p className="process-detail">{step.detail}</p>
+            </div>
           </li>
         ))}
       </ol>

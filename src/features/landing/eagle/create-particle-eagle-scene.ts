@@ -215,8 +215,9 @@ export async function createParticleEagleScene(canvas: HTMLCanvasElement, option
     gl!.uniform1f(u.scatter, scatter)
     gl!.uniform2f(u.pointer, pointer.x, pointer.y)
     gl!.uniform1f(u.tilt, pointer.tilt)
-    gl!.uniform2f(u.offset, wide ? 0.33 * aspect : 0, wide ? 0.12 : 0.36)
-    gl!.uniform1f(u.scale, wide ? 0.66 : 0.56 * Math.max(aspect, 0.6))
+    // The stage owns responsive placement; center the eagle within that space.
+    gl!.uniform2f(u.offset, 0, 0)
+    gl!.uniform1f(u.scale, 0.78 * Math.min(aspect, 1))
     gl!.uniform1f(u.aspect, aspect)
     gl!.uniform1f(u.pointSize, (wide ? 3.4 : 2.8) * dpr)
     gl!.drawArrays(gl!.POINTS, 0, count)

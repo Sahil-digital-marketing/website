@@ -1,8 +1,9 @@
 import { contactLinks, navigationLinks, services } from '../data/landing'
+import { homeSectionHref } from '../lib/navigation'
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer photo-field">
       <p className="footer-name" aria-hidden="true">SAHIL</p>
       <div className="footer-inner">
         <div className="footer-places">
@@ -13,16 +14,16 @@ export function SiteFooter() {
         </div>
         <nav className="footer-column" aria-label="Footer navigation">
           <h3>Explore</h3>
-          {navigationLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+          {navigationLinks.map((link) => <a href={link.href.startsWith('#') ? homeSectionHref(link.href) : link.href} key={link.href}>{link.label}</a>)}
         </nav>
         <div className="footer-column">
           <h3>Services</h3>
-          {services.map((service) => <a href="#explore" key={service.id}>{service.title}</a>)}
+          {services.map((service) => <a href={service.href} key={service.id}>{service.title}</a>)}
         </div>
         <div className="footer-column">
           <h3>Studio</h3>
           <p>SAHIL Digital Marketing</p>
-          <p>Signature of Success.</p>
+          <p>The signature of success.</p>
           <p>Serving businesses across India.</p>
         </div>
       </div>

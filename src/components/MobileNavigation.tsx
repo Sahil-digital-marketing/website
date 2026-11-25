@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { navigationLinks } from '../data/landing'
 import { ArrowIcon } from './ArrowIcon'
+import { homeSectionHref, isCurrentNavPath } from '../lib/navigation'
+import { EnquiryLink } from './EnquiryLink'
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -43,11 +45,11 @@ export function MobileNavigation() {
       {isOpen && (
         <nav id="mobile-navigation-panel" className="mobile-navigation-panel" aria-label="Mobile navigation">
           {navigationLinks.map((link) => (
-            <a href={link.href} key={link.href} onClick={() => setIsOpen(false)}>
+            <a href={link.href.startsWith('#') ? homeSectionHref(link.href) : link.href} key={link.href} aria-current={isCurrentNavPath(link.href) ? 'page' : undefined} onClick={() => setIsOpen(false)}>
               {link.label}<ArrowIcon />
             </a>
           ))}
-          <a className="button button-primary" href="#contact" onClick={() => setIsOpen(false)}>Start a Project <ArrowIcon /></a>
+          <EnquiryLink className="button button-primary" onClick={() => setIsOpen(false)}>Start a Project <ArrowIcon /></EnquiryLink>
         </nav>
       )}
     </div>

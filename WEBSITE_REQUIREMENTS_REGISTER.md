@@ -5,6 +5,12 @@ founder, content team, designer, developer, and launch owner. **Confirmed**
 items may be designed or implemented; **approval required** items must not be
 guessed or published.
 
+**Service scope update, 2026-11-24:** The public site now presents two main
+services: Website Development and Digital Growth monthly plans. Custom websites,
+software and applications are part of Website Development. The five separately
+listed marketing services below are superseded as public offerings. Existing
+educational Field Notes remain available.
+
 ## Confirmed Scope
 
 | Area | Confirmed requirement |
@@ -12,10 +18,10 @@ guessed or published.
 | Brand | SAHIL Digital Marketing; tagline: *Signature of Success* |
 | Market | India only; broad startups, local businesses, brands, creators, and entrepreneurs |
 | Goal | Generate qualified enquiries through the primary CTA: **Start a Project** |
-| Services | Social Media Marketing, SEO, Google Ads, Content Marketing, Analytics & Reporting, Website Development |
+| Services | Website Development and Digital Growth monthly plans (Basic, Popular, Premium); custom sites/software/apps within Website Development |
 | Direction | Premium, professional, modern, dark-blue-led, responsive, accessible |
 | Proof | Publish only genuine projects, verified outcomes, and permissioned testimonials |
-| Launch pages | Home, About, Services + six service pages, Work, Process, Contact, Privacy, Terms, Thank You; add case studies only when real approved work exists |
+| Launch pages | Home, About, Services + two service detail pages, Work, Process, Contact, Privacy, Terms, Thank You; add case studies only when real approved work exists |
 
 ## Founder Decisions Required Before Design Sign-off
 
@@ -77,7 +83,7 @@ guessed or published.
 
 ## Non-Technical Content Checklist
 
-- Final approved copy for each launch page and all six service pages.
+- Final approved copy for each launch page and both service detail pages.
 - Real portfolio items: challenge, services, duration, result, assets, and
   publication permission. Label concepts clearly.
 - Genuine testimonials with consent, attribution preference, and source.

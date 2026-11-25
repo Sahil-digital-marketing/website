@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import { ArrowIcon } from '../../components/ArrowIcon'
+import { EnquiryLink } from '../../components/EnquiryLink'
 import { HeroArt } from '../../components/HeroArt'
+import { EditorialImage } from '../../components/EditorialImage'
 import { fieldNotes, type FieldNote } from '../../data/landing'
 import { easeOut, gsap, prefersReducedMotion, SplitText } from '../../lib/motion'
 
@@ -32,17 +34,17 @@ export function HeroSection({ onOpenNote }: HeroSectionProps) {
     <section className="hero" id="top" aria-labelledby="hero-title">
       <HeroArt />
       <div className="hero-copy" ref={copyRef}>
-        <h1 id="hero-title">Growth, signed and delivered.</h1>
-        <p className="hero-summary">SAHIL Digital Marketing plans and runs social, search, ads, content and websites for businesses across India.</p>
+        <h1 id="hero-title">The signature of success.</h1>
+        <p className="hero-summary">We turn bold ideas into magnetic digital experiences — combining strategy, creativity and technology to move your business forward.</p>
         <div className="hero-actions">
-          <a className="button button-primary" href="#contact">Start a Project <ArrowIcon /></a>
+          <EnquiryLink className="button button-primary">Start a Project <ArrowIcon /></EnquiryLink>
           <a className="text-link" href="#explore">See what we do <ArrowIcon direction="down" /></a>
         </div>
       </div>
       <div className="hero-cards">
         {fieldNotes.slice(0, 2).map((note) => (
           <button className="hero-card" type="button" key={note.id} onClick={() => onOpenNote(note)}>
-            <img src={note.image.src.replace('/1200/900', '/420/280')} width="420" height="280" alt={note.image.alt} />
+            <EditorialImage image={note.image} sizes="(max-aspect-ratio: 21/20) 45vw, (max-width: 1200px) 180px, 230px" loading="eager" />
             <span className="hero-card-title">{note.title}<ArrowIcon /></span>
           </button>
         ))}

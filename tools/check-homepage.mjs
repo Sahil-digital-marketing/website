@@ -6,9 +6,13 @@ import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { runServiceChecks } from './check-services.mjs'
+import { runProcessChecks } from './check-process.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const output = path.join(root, '.artifacts', 'homepage')
+const servicesCheck = process.argv.includes('--services')
+const processCheck = process.argv.includes('--process')
+const output = path.join(root, '.artifacts', processCheck ? 'process' : servicesCheck ? 'services' : 'homepage')
 const chromeCandidates = [
   process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -24,11 +28,12 @@ for (const candidate of chromeCandidates) {
 assert.ok(chromePath, 'Chrome is required; set CHROME_PATH to your Chrome/Chromium executable')
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'sahil-homepage-'))
 await fs.mkdir(output, { recursive: true })
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff' }
+const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.webp': 'image/webp', '.png': 'image/png', '.ico': 'image/x-icon' }
 const server = http.createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
-    const target = path.resolve(root, 'dist', '.' + (pathname === '/' ? '/index.html' : pathname))
+    const resource = path.extname(pathname) ? pathname : `${pathname.replace(/\/$/, '')}/index.html`
+    const target = path.resolve(root, 'dist', '.' + resource)
     assert.ok(target.startsWith(path.join(root, 'dist') + path.sep))
     response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream')
     response.end(await fs.readFile(target))
@@ -49,6 +54,8 @@ const chrome = spawn(chromePath, [
 let socket
 const pending = new Map()
 const runtimeErrors = []
+const imageRequests = new Set()
+const failedResponses = []
 let sequence = 0
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -79,7 +86,11 @@ async function evaluate(expression) {
 }
 
 async function click(selector) {
-  await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'center',behavior:'instant'})`)
+  await evaluate(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)}); const r = el.getBoundingClientRect();
+    if (r.top < 80 || r.bottom > innerHeight) el.scrollIntoView({block:'center',behavior:'instant'});
+  })()`)
+  await delay(400) // Let smooth-scroll state and scroll-triggered layout settle.
   const point = await evaluate(`(() => { const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2} })()`)
   await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point })
   await send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 })
@@ -94,6 +105,33 @@ async function screenshot(name, fullPage = false) {
   await fs.writeFile(path.join(output, name + '.png'), Buffer.from(shot.data, 'base64'))
 }
 
+async function checkImages(selector = 'img') {
+  const images = await evaluate(`(async () => {
+    const images = [...document.querySelectorAll(${JSON.stringify(selector)})];
+    await Promise.all(images.map(image => { image.loading = 'eager'; return image.decode() }));
+    return images.map(image => ({ src: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight, sized: image.hasAttribute('width') && image.hasAttribute('height'), responsive: Boolean(image.srcset && image.sizes), alt: image.getAttribute('alt') }));
+  })()`)
+  for (const image of images) {
+    assert.ok(image.src.startsWith(url + '/'), `Local image: ${image.src}`)
+    assert.ok(image.width && image.height && image.sized, `Loaded, dimensioned image: ${image.src}`)
+    if (image.src.includes('/images/home/')) assert.ok(image.responsive, 'Editorial photos have responsive sources')
+    assert.notEqual(image.alt, null, 'Alt attribute is present')
+  }
+  return images.length
+}
+
+async function sectionScreenshot(selector, name) {
+  await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({block:'start',behavior:'instant'})`)
+  await delay(500)
+  // Keep the viewport fixed: oversized CDP clips can alter viewport-dependent layouts.
+  await screenshot(name)
+}
+
+async function keypress(key, code = key) {
+  await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key, code })
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', key, code })
+}
+
 const results = []
 try {
   const portFile = await waitFor(() => fs.readFile(path.join(profile, 'DevToolsActivePort'), 'utf8'), 'browser startup')
@@ -104,6 +142,8 @@ try {
   socket.addEventListener('message', (event) => {
     const message = JSON.parse(event.data)
     if (message.method === 'Runtime.exceptionThrown') runtimeErrors.push(message.params.exceptionDetails)
+    if (message.method === 'Network.requestWillBeSent' && message.params.type === 'Image') imageRequests.add(message.params.request.url)
+    if (message.method === 'Network.responseReceived' && message.params.response.status >= 400) failedResponses.push(message.params.response.url)
     const callback = pending.get(message.id)
     if (!callback) return
     clearTimeout(callback.timeout)
@@ -114,6 +154,15 @@ try {
   await send('Page.enable')
   await send('Runtime.enable')
   await send('Network.enable')
+  if (processCheck) {
+    await runProcessChecks({ send, evaluate, click, waitFor, screenshot, sectionScreenshot, keypress, delay, url, output })
+    assert.equal(runtimeErrors.length, 0, 'No process-page runtime exceptions')
+    assert.deepEqual(failedResponses, [], 'No failed process-page resources')
+  } else if (servicesCheck) {
+    await runServiceChecks({ send, evaluate, click, waitFor, screenshot, sectionScreenshot, checkImages, keypress, delay, url, output })
+    assert.equal(runtimeErrors.length, 0, 'No service-page runtime exceptions')
+    assert.deepEqual(failedResponses, [], 'No failed service-page resources')
+  } else {
   for (const theme of ['dark', 'light']) {
     for (const width of [375, 768, 1024, 1440]) {
       const height = width === 375 ? 812 : width === 768 ? 1024 : 900
@@ -123,13 +172,24 @@ try {
       await send('Page.navigate', { url })
       await waitFor(() => evaluate('Boolean(document.querySelector(".motion-toggle"))'), '3D scene')
       await evaluate('document.fonts.ready.then(() => true)')
-      await delay(350)
+      await delay(2800) // Let the eagle assemble and the hero copy finish entering.
+      await checkImages()
       const metrics = await evaluate(`({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light', headings: document.querySelectorAll('h1').length, sections: document.querySelectorAll('main > section').length, canvas: document.querySelector('canvas').classList.contains('is-ready'), links: [...document.querySelectorAll('a[href^="#"]')].every(a => document.getElementById(a.getAttribute('href').slice(1))) })`)
       assert.ok(metrics.scrollWidth <= width, `Overflow at ${width} ${theme}`)
       assert.equal(metrics.theme, theme)
       assert.equal(metrics.headings, 1)
       assert.ok(metrics.links, 'Anchor destinations exist')
       assert.ok(metrics.canvas, '3D rendered')
+      assert.equal(await evaluate('document.querySelector("h1").textContent'), 'The signature of success.')
+      assert.ok(await evaluate(`['description', 'og:description', 'twitter:description'].every(name => document.querySelector('meta[name="'+name+'"],meta[property="'+name+'"]').content === document.querySelector('.hero-summary').textContent)`), 'Exact description metadata')
+      assert.ok(await evaluate(`document.title.endsWith('The signature of success.') && document.querySelector('meta[property="og:title"]').content === document.title && document.querySelector('meta[name="twitter:title"]').content === document.title`), 'Exact title metadata')
+      assert.ok(await evaluate(`(() => {
+        const a = document.querySelector('.hero-copy').getBoundingClientRect();
+        return ['.eagle-stage','.hero-cards'].every(selector => {
+          const b = document.querySelector(selector).getBoundingClientRect();
+          return a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+        });
+      })()`), 'Hero copy is separated from eagle and cards')
       if (width === 375) {
         await click('.menu-toggle')
         await waitFor(() => evaluate('document.querySelector(".menu-toggle").getAttribute("aria-expanded") === "true"'), 'menu opens')
@@ -144,7 +204,48 @@ try {
       await waitFor(() => evaluate('document.querySelector(".motion-toggle").getAttribute("aria-pressed") === "true"'), 'motion pauses')
       assert.equal(await evaluate('document.querySelector(".motion-toggle").getAttribute("aria-pressed")'), 'true')
       await evaluate('scrollTo({top:0,behavior:"instant"})')
-      await screenshot(`${theme}-${width}`, width === 375 || width === 1440)
+      await screenshot(`${theme}-${width}-hero`)
+      // Trigger the real scroll reveals before section captures.
+      for (const selector of ['#about', '.vision', '#services', '#process', '#explore', '#notes', '#contact', '.site-footer']) {
+        await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({behavior:'instant'})`)
+        await delay(80)
+      }
+      await delay(1500)
+      await evaluate('scrollTo({top:0,behavior:"instant"})')
+      await screenshot(`${theme}-${width}`)
+      for (const selector of ['.vision', '#services', '#process', '#explore', '#notes', '#contact', '.site-footer']) {
+        await sectionScreenshot(selector, `${theme}-${width}-${selector.replace(/[.#]/g, '')}`)
+      }
+      const undersized = await evaluate(`([...document.querySelectorAll('a,button,input,select,textarea')].filter(el => {
+        const r = el.getBoundingClientRect(); const style = getComputedStyle(el);
+        return r.width > 0 && r.height > 0 && style.visibility !== 'hidden' && (r.width < 44 || r.height < 44);
+      }).map(el => ({ className: el.className, text: el.textContent.trim() })))`)
+      assert.deepEqual(undersized, [], '44px control targets')
+      const serviceIds = ['web','growth']
+      for (const id of serviceIds) {
+        await click('#tab-' + id)
+        await waitFor(() => evaluate(`document.querySelector('#tab-${id}').getAttribute('aria-selected') === 'true'`), `service selection: ${id}`)
+        await checkImages('.explorer-image')
+        assert.ok(await evaluate('document.documentElement.scrollWidth') <= width, 'Service panel does not overflow')
+        if (width === 375 || width === 1440) await sectionScreenshot('.explorer-panel', `${theme}-${width}-service-${id}`)
+      }
+      if (width === 375 || width === 1440) {
+        for (let note = 1; note <= 5; note++) {
+          await click(`.note-tile--${note} button`)
+          await waitFor(() => evaluate('document.querySelector("dialog.reader").open'), 'article dialog')
+          assert.equal(await evaluate('document.querySelector("dialog.reader").scrollTop'), 0, 'Article opens at the top')
+          assert.equal(await evaluate('document.activeElement.className'), 'reader-close', 'Close control receives focus')
+          await checkImages('.reader-image')
+          await delay(400)
+          await screenshot(`${theme}-${width}-article-${note}`)
+          await click('.reader-close')
+          await waitFor(() => evaluate('!document.querySelector("dialog.reader").open'), 'article closes')
+        }
+      }
+      await evaluate('document.querySelector("#tab-web").focus()')
+      await keypress('ArrowDown')
+      assert.equal(await evaluate('document.activeElement.id'), 'tab-growth', 'Keyboard service navigation')
+      assert.ok(await evaluate('document.activeElement.matches(":focus-visible") && getComputedStyle(document.activeElement).outlineStyle !== "none"'), 'Visible keyboard focus')
       results.push({ ...metrics, menu: width === 375 ? 'pass' : 'not applicable', pause: 'pass' })
       console.log(`${theme} ${width}: layout, anchors, 3D, pause${width === 375 ? ', menu and Escape' : ''} passed`)
     }
@@ -160,12 +261,11 @@ try {
   await waitFor(() => evaluate('Boolean(document.querySelector(".theme-toggle"))'), 'persisted theme')
   assert.equal(await evaluate('document.documentElement.classList.contains("dark")'), true)
 
-  // The live thing: choosing a service updates the panel and carries into the enquiry form.
-  await click('#tab-seo')
-  await waitFor(() => evaluate('document.querySelector("#tab-seo").getAttribute("aria-selected") === "true"'), 'service tab selects')
-  assert.match(await evaluate('document.querySelector(".explorer-tagline").textContent'), /Get found/)
-  await evaluate('document.querySelector(".explorer-start").click()')
-  await waitFor(() => evaluate('document.querySelector("[name=\\"service\\"]").value === "seo"'), 'service preselected in form')
+  // Choosing a service updates the panel and opens its detail page.
+  await click('#tab-growth')
+  await waitFor(() => evaluate('document.querySelector("#tab-growth").getAttribute("aria-selected") === "true"'), 'service tab selects')
+  assert.match(await evaluate('document.querySelector(".explorer-tagline").textContent'), /growth|content|presence/i)
+  assert.equal(await evaluate('new URL(document.querySelector(".explorer-start").href).pathname'), '/services/digital-growth')
   // Field notes open in a native dialog and close on Escape.
   await delay(1600) // let the smooth anchor scroll to #contact finish first
   await evaluate('scrollTo({top:0,behavior:"instant"})')
@@ -175,7 +275,7 @@ try {
   await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
   await waitFor(() => evaluate('!document.querySelector("dialog.reader").open'), 'reader closes')
-  assert.ok(await evaluate('document.querySelectorAll(".faq-item").length') >= 8, 'FAQ answers are on the page')
+  assert.equal(await evaluate('document.querySelector("#faq")'), null, 'FAQ removed')
   await evaluate('document.querySelector("form").reset()')
   assert.equal(await evaluate('document.querySelector("form").checkValidity()'), false)
   await evaluate(`(() => { for (const [name,value] of Object.entries({name:'Test Business',email:'test@example.com',project:'A business website and marketing enquiry.'})) document.querySelector('[name="'+name+'"]').value=value; document.querySelector('[name="service"]').selectedIndex=1; document.querySelector('form').requestSubmit() })()`)
@@ -194,9 +294,12 @@ try {
   assert.equal(await evaluate('document.querySelector(".eagle-canvas").classList.contains("is-ready")'), false)
   await screenshot('webgl-fallback')
   assert.equal(runtimeErrors.length, 0, 'No runtime exceptions')
-  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, themePersistence: 'pass', serviceExplorer: 'pass', reader: 'pass', faq: 'pass', formPreview: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
-  console.log('Theme persistence, service explorer, reader dialog, FAQ, form validation/preview, reduced motion, WebGL fallback, runtime errors: passed')
+  assert.deepEqual(failedResponses, [], 'No failed resource requests')
+  assert.ok([...imageRequests].every(src => src.startsWith(url + '/')), 'All image requests are local')
+  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, failedResponses, localImageRequests: imageRequests.size, heroSeparation: 'pass', responsiveImages: 'pass', controlTargets: 'pass', keyboardTabs: 'pass', keyboardFocus: 'pass', themePersistence: 'pass', serviceExplorer: 'pass', reader: 'pass', faqRemoved: 'pass', formPreview: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
+  console.log('Theme persistence, service explorer, reader dialog, FAQ removal, form validation/preview, reduced motion, WebGL fallback, runtime errors: passed')
   console.log(`Screenshots: ${output}`)
+  }
 } finally {
   socket?.close()
   chrome.kill()

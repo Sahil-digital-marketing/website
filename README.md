@@ -1,6 +1,6 @@
 # SAHIL Digital Marketing
 
-Single-page marketing website built with React, TypeScript, Vite, and Tailwind CSS v4.3.
+Marketing website built with React, TypeScript, Vite, and Tailwind CSS v4.3.
 
 ## Run locally
 
@@ -17,7 +17,8 @@ npm run dev
 - `App.tsx` selects the page for the URL; `pages/LandingPage.tsx` composes sections.
 - `src/components/` owns navigation, branding, controls, the form, the reader dialog, and the eagle presentation.
 - `src/features/landing/` owns page sections and the particle eagle renderer.
-- `src/data/landing.ts` owns services (with their detail), about copy, field notes, process, FAQs, and contact links.
+- `src/data/landing.ts` owns services (with their detail), about copy, field notes, process, and contact links.
+- `src/data/websitePackages.ts` and `src/data/growthPackages.ts` own the two current service offers. See `docs/services.md` for scope and enquiry behavior.
 - `src/lib/` owns the motion layer: Lenis smooth scroll driven by GSAP's ticker, scroll reveals, and the magnetic CTA.
 - `src/styles.css` owns brand tokens, light/dark themes, responsive layout, and CSS motion.
 - `public/brand/` holds the approved SAHIL logo (colour and one-colour), the eagle mark, favicons, and the share image.
@@ -27,7 +28,7 @@ npm run dev
 An editorial "printed annual" layout (12-column grid, an axis at about 42%, whole
 sections in flat colour) on the Cobalt Horizon palette, with the logo's chrome
 carried by the hero. Sora and Inter only. Square media, pill buttons, no
-gradients, glass, hairlines, eyebrow labels, or shadows at rest.
+gradients, glass, or shadows at rest. Service pages use small section labels and bordered package comparisons.
 
 The hero is the SAHIL eagle drawn by ~15,000 WebGL2 points sampled from the
 logo mark, keeping its own chrome and blue. The points gather on load, part
@@ -44,10 +45,9 @@ free for commercial use) and `lenis` (MIT). Everything is skipped under
 
 Enquiry delivery is not connected: native field validation and local review work,
 but no form details are transmitted or saved. Field-note and contact photographs
-are placeholder atmosphere from picsum.photos (Unsplash licence) and should be
-replaced with the studio's own pictures. Contact details, "Udyam MSME" wording,
-service deliverables (Website Development in particular), and field-note copy are
-carried over from the current site and need founder confirmation. No portfolio
+are generated illustrative scenes served locally; they do not represent studio staff or client work. Contact details, "Udyam MSME" wording,
+service deliverables and field-note copy are
+carried over from the current site. Website package pricing and scope follow the supplied Price Sheet.pdf. No portfolio
 work, testimonials, or statistics have been invented.
 
 ## Browser checks
@@ -57,6 +57,6 @@ After building, run `npm run check:homepage` with Node 22+ and Chrome installed
 headless browser and serves the production build on a temporary local port.
 
 It checks both themes at 375, 768, 1024, and 1440 pixels; anchor links, the
-mobile menu and Escape, theme persistence, animation pause, FAQ expansion,
+mobile menu and Escape, theme persistence, animation pause, FAQ removal,
 form validation, reduced motion, rendering fallback, and runtime exceptions.
 Screenshots and the JSON report are written to ignored `.artifacts/homepage/`.

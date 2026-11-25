@@ -1,17 +1,17 @@
 import { useRef, type KeyboardEvent } from 'react'
 import { ArrowIcon } from '../../components/ArrowIcon'
+import { EditorialImage } from '../../components/EditorialImage'
 import { services } from '../../data/landing'
 import { useReveal } from '../../lib/useReveal'
 
 type ServiceExplorerProps = {
   selectedId: string
   onSelect: (serviceId: string) => void
-  onStart: (serviceId: string) => void
 }
 
 /* The page's live thing: pick a service, read exactly what it includes and how
    the work runs, then start an enquiry with that service already chosen. */
-export function ServiceExplorer({ selectedId, onSelect, onStart }: ServiceExplorerProps) {
+export function ServiceExplorer({ selectedId, onSelect }: ServiceExplorerProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   useReveal(sectionRef)
@@ -61,25 +61,30 @@ export function ServiceExplorer({ selectedId, onSelect, onStart }: ServiceExplor
           })}
         </div>
         <div className="explorer-panel" id="explorer-panel" role="tabpanel" aria-labelledby={`tab-${selected.id}`} key={selected.id}>
-          <p className="explorer-tagline">{selected.tagline}</p>
-          <ul className="explorer-bands" aria-label={`Included in ${selected.title}`}>
-            {selected.included.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-          <div className="explorer-foot">
-            <div>
-              <h3>How the work runs</h3>
-              <ol className="explorer-steps">
-                {selected.steps.map((step) => <li key={step}>{step}</li>)}
-              </ol>
-            </div>
-            <div>
-              <h3>Best for</h3>
-              <p>{selected.bestFor}</p>
-            </div>
+          <div className="explorer-details">
+            <p className="explorer-tagline">{selected.tagline}</p>
+            <ul className="explorer-bands" aria-label={`Included in ${selected.title}`}>
+              {selected.included.map((item) => <li key={item}>{item}</li>)}
+            </ul>
           </div>
-          <a className="button button-primary explorer-start" href="#contact" onClick={() => onStart(selected.id)}>
-            Start with {selected.title} <ArrowIcon />
-          </a>
+          <div className="explorer-overview">
+            <EditorialImage className="explorer-image" image={selected.image} sizes="(max-width: 600px) 92vw, 32vw" />
+            <div className="explorer-foot">
+              <div>
+                <h3>How the work runs</h3>
+                <ol className="explorer-steps">
+                  {selected.steps.map((step) => <li key={step}>{step}</li>)}
+                </ol>
+              </div>
+              <div>
+                <h3>Best for</h3>
+                <p>{selected.bestFor}</p>
+              </div>
+            </div>
+            <a className="button button-primary explorer-start" href={selected.href}>
+              View {selected.title} <ArrowIcon />
+            </a>
+          </div>
         </div>
       </div>
     </section>
