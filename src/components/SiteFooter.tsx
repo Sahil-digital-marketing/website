@@ -30,6 +30,7 @@ export function SiteFooter() {
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} SAHIL Digital Marketing. All rights reserved.</span>
         <a href="#top">Back to top</a>
+        <a href="/privacy">Privacy notice</a>
       </div>
     </footer>
   )

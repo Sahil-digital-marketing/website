@@ -1,3 +1,4 @@
+ 'use client'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { EditorialImage } from '../components/EditorialImage'
 import { ServicePageLayout } from '../components/ServicePageLayout'

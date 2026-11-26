@@ -6,7 +6,9 @@ import { EnquiryLink } from './EnquiryLink'
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [path, setPath] = useState('')
   const toggleRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => setPath(window.location.pathname), [])
 
   useEffect(() => {
     if (!isOpen) return
@@ -45,7 +47,7 @@ export function MobileNavigation() {
       {isOpen && (
         <nav id="mobile-navigation-panel" className="mobile-navigation-panel" aria-label="Mobile navigation">
           {navigationLinks.map((link) => (
-            <a href={link.href.startsWith('#') ? homeSectionHref(link.href) : link.href} key={link.href} aria-current={isCurrentNavPath(link.href) ? 'page' : undefined} onClick={() => setIsOpen(false)}>
+            <a href={link.href.startsWith('#') ? homeSectionHref(link.href) : link.href} key={link.href} aria-current={isCurrentNavPath(link.href, path) ? 'page' : undefined} onClick={() => setIsOpen(false)}>
               {link.label}<ArrowIcon />
             </a>
           ))}

@@ -1,5 +1,11 @@
 node_modules/
 dist/
+.next/
+.vinext/
+.wrangler/
+.dev.vars*
+!.dev.vars.example
 .vite/
 *.local
 .artifacts/
+.cloudflare/

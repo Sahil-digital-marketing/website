@@ -1,3 +1,4 @@
+ 'use client'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { EnquiryLink } from '../components/EnquiryLink'
 import { ServicePageLayout } from '../components/ServicePageLayout'

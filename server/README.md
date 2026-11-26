@@ -1,24 +1,8 @@
-# Optional Backend
+# Enquiry backend
 
-No backend is initialized yet. Keep this directory until the project needs
-server-side features such as authentication, private API integrations, a
-database, or webhooks.
+Next.js route handlers live in `app/api/`; server-only helpers, D1 schema and the
+mail queue consumer live here. See [DEPLOYMENT.md](../DEPLOYMENT.md) for setup.
 
-When that happens, create a separate backend package here rather than placing
-server code in `src/`:
-
-```text
-server/
-  src/routes/       HTTP endpoints
-  src/services/     business logic and external integrations
-  src/db/           database access and migrations
-  src/middleware/   authentication, validation, rate limits
-  tests/            backend tests
-  .env.example      required variable names only
-  package.json      backend-specific scripts and dependencies
-```
-
-The Vite frontend may call a backend only through a public
-`VITE_API_BASE_URL` and client modules in `src/services/`. Never import backend
-files into React, and never put secrets in a `VITE_` variable: Vite exposes them
-to every browser user.
+The form saves to D1 before acknowledging success. Both emails are queued and
+retried by `mail-worker.ts`; `smtp.ts` sends them over a native Cloudflare TCP
+socket with STARTTLS. The dashboard reads the delivery state from D1.

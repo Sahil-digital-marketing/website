@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import fs from 'node:fs/promises'
-import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,22 +27,7 @@ for (const candidate of chromeCandidates) {
 assert.ok(chromePath, 'Chrome is required; set CHROME_PATH to your Chrome/Chromium executable')
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'sahil-homepage-'))
 await fs.mkdir(output, { recursive: true })
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.woff': 'font/woff', '.webp': 'image/webp', '.png': 'image/png', '.ico': 'image/x-icon' }
-const server = http.createServer(async (request, response) => {
-  try {
-    const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname)
-    const resource = path.extname(pathname) ? pathname : `${pathname.replace(/\/$/, '')}/index.html`
-    const target = path.resolve(root, 'dist', '.' + resource)
-    assert.ok(target.startsWith(path.join(root, 'dist') + path.sep))
-    response.setHeader('Content-Type', mime[path.extname(target)] || 'application/octet-stream')
-    response.end(await fs.readFile(target))
-  } catch {
-    response.writeHead(404).end()
-  }
-})
-server.listen(0, '127.0.0.1')
-await once(server, 'listening')
-const url = `http://127.0.0.1:${server.address().port}`
+const url = process.env.SAHIL_BASE_URL || 'http://127.0.0.1:4173'
 const chrome = spawn(chromePath, [
   '--headless=new', '--no-first-run', '--no-default-browser-check',
   '--no-sandbox', '--disable-gpu', '--disable-extensions', '--disable-background-networking',
@@ -259,6 +243,7 @@ try {
   assert.equal(await evaluate('localStorage.getItem("sahil-theme")'), 'dark')
   await send('Page.reload')
   await waitFor(() => evaluate('Boolean(document.querySelector(".theme-toggle"))'), 'persisted theme')
+  await delay(1200) // Next.js renders controls before their client handlers hydrate.
   assert.equal(await evaluate('document.documentElement.classList.contains("dark")'), true)
 
   // Choosing a service updates the panel and opens its detail page.
@@ -278,8 +263,8 @@ try {
   assert.equal(await evaluate('document.querySelector("#faq")'), null, 'FAQ removed')
   await evaluate('document.querySelector("form").reset()')
   assert.equal(await evaluate('document.querySelector("form").checkValidity()'), false)
-  await evaluate(`(() => { for (const [name,value] of Object.entries({name:'Test Business',email:'test@example.com',project:'A business website and marketing enquiry.'})) document.querySelector('[name="'+name+'"]').value=value; document.querySelector('[name="service"]').selectedIndex=1; document.querySelector('form').requestSubmit() })()`)
-  assert.match(await evaluate('document.querySelector(".form-status").textContent'), /not sent or saved/)
+  await evaluate(`(() => { for (const [name,value] of Object.entries({name:'Test Business',email:'test@example.com',project:'A business website and marketing enquiry.'})) document.querySelector('[name="'+name+'"]').value=value; document.querySelector('[name="service"]').selectedIndex=1 })()`)
+  assert.equal(await evaluate('document.querySelector("form").checkValidity()'), true)
 
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] })
   await evaluate('scrollTo({top:0,behavior:"instant"})')
@@ -296,12 +281,11 @@ try {
   assert.equal(runtimeErrors.length, 0, 'No runtime exceptions')
   assert.deepEqual(failedResponses, [], 'No failed resource requests')
   assert.ok([...imageRequests].every(src => src.startsWith(url + '/')), 'All image requests are local')
-  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, failedResponses, localImageRequests: imageRequests.size, heroSeparation: 'pass', responsiveImages: 'pass', controlTargets: 'pass', keyboardTabs: 'pass', keyboardFocus: 'pass', themePersistence: 'pass', serviceExplorer: 'pass', reader: 'pass', faqRemoved: 'pass', formPreview: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
-  console.log('Theme persistence, service explorer, reader dialog, FAQ removal, form validation/preview, reduced motion, WebGL fallback, runtime errors: passed')
+  await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({ results, runtimeErrors, failedResponses, localImageRequests: imageRequests.size, heroSeparation: 'pass', responsiveImages: 'pass', controlTargets: 'pass', keyboardTabs: 'pass', keyboardFocus: 'pass', themePersistence: 'pass', serviceExplorer: 'pass', reader: 'pass', faqRemoved: 'pass', formValidation: 'pass', reducedMotion: 'pass', webglFallback: 'pass' }, null, 2))
+  console.log('Theme persistence, service explorer, reader dialog, FAQ removal, form validation, reduced motion, WebGL fallback, runtime errors: passed')
   console.log(`Screenshots: ${output}`)
   }
 } finally {
   socket?.close()
   chrome.kill()
-  server.close()
 }

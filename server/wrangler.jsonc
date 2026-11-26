@@ -1,0 +1,12 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "sahil-mail",
+  "main": "mail-worker.ts",
+  "workers_dev": false,
+  "compatibility_date": "2026-11-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "sahil-enquiries", "database_id": "38886017-803c-4b77-957e-6591312328c4" }],
+  "queues": {
+    "consumers": [{ "queue": "sahil-mail", "max_batch_size": 5, "max_retries": 8, "dead_letter_queue": "sahil-mail-dead" }]
+  }
+}

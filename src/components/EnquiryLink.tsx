@@ -9,7 +9,7 @@ export function EnquiryLink({ service, packageId, onClick, children, ...props }:
   const query = new URLSearchParams()
   if (next.service) query.set('service', next.service)
   if (next.packageId) query.set('package', next.packageId)
-  const href = `${window.location.pathname}${query.size ? `?${query}` : ''}#contact`
+  const href = `/${query.size ? `?${query}` : ''}#contact`
 
   return <a {...props} href={href} onClick={event => {
     onClick?.(event)
@@ -17,7 +17,12 @@ export function EnquiryLink({ service, packageId, onClick, children, ...props }:
     event.preventDefault()
     if (service) select({ service, packageId })
     // Keep the page and the form mounted so changing a package preserves typed details.
-    history.replaceState(null, '', href)
-    document.getElementById('contact')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
+    const target = document.getElementById('contact')
+    if (!target) {
+      window.location.assign(href)
+      return
+    }
+    history.replaceState(null, '', `${window.location.pathname}${query.size ? `?${query}` : ''}#contact`)
+    target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
   }}>{children}</a>
 }

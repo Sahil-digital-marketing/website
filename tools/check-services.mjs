@@ -8,7 +8,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
   async function navigate(route, selector) {
     await evaluate('window.__serviceCheckLeaving = true')
     await send('Page.navigate', { url: url + route })
-    await waitFor(() => evaluate(`!window.__serviceCheckLeaving && location.pathname === ${JSON.stringify(route.split('?')[0].split('#')[0])} && Boolean(document.querySelector(${JSON.stringify(selector)}))`), 'new route document renders')
+    await waitFor(() => evaluate(`!window.__serviceCheckLeaving && (location.pathname.replace(/\\/+$/, '') || '/') === ${JSON.stringify(route.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/')} && Boolean(document.querySelector(${JSON.stringify(selector)}))`), 'new route document renders')
     await evaluate('document.fonts.ready')
   }
   for (const theme of ['light', 'dark']) {
@@ -99,6 +99,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
     ['service=custom&package=landing-basic', 'web', 'custom-development'],
   ]) {
     await navigate('/?' + query + '#contact', '.enquiry-form')
+    await waitFor(() => evaluate(`document.querySelector('[name=service]').value === ${JSON.stringify(expectedService)} && (document.querySelector('input[name=package]')?.value ?? null) === ${JSON.stringify(expectedPackage)}`), 'query prefills form after hydration')
     assert.equal(await evaluate('document.querySelector("[name=service]").value'), expectedService)
     assert.equal(await evaluate('document.querySelector("input[name=package]")?.value ?? null'), expectedPackage)
   }
@@ -112,6 +113,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
   await click('.brand')
   await waitFor(() => evaluate('Boolean(document.querySelector(".hero"))'), 'Logo returns home')
   await navigate('/services', '.service-page')
+  await delay(800)
   await click('.theme-toggle')
   const chosen = await evaluate('localStorage.getItem("sahil-theme")')
   await send('Page.reload')

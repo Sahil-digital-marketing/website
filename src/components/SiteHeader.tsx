@@ -1,3 +1,4 @@
+'use client'
 import { useMagnetic } from '../lib/useMagnetic'
 import { ArrowIcon } from './ArrowIcon'
 import { Brand } from './Brand'

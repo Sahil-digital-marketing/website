@@ -3,7 +3,7 @@ import { findWebsitePackage } from '../data/websitePackages'
 import { customDevelopment } from '../data/customDevelopment'
 
 export function readEnquirySelection() {
-  const query = new URLSearchParams(window.location.search)
+  const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search)
   const requestedService = query.get('service')
   const service = requestedService === customDevelopment.id
     ? 'web'

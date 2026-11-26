@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+'use client'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { readEnquirySelection } from '../lib/enquirySelection'
 import { services } from '../data/landing'
 import { customDevelopment } from '../data/customDevelopment'
@@ -12,9 +13,8 @@ const EnquiryContext = createContext<{
 } | null>(null)
 
 export function EnquiryProvider({ children }: { children: ReactNode }) {
-  const [selection, setSelection] = useState<EnquirySelection>(() => {
-    return readEnquirySelection()
-  })
+  const [selection, setSelection] = useState<EnquirySelection>({ service: '' })
+  useEffect(() => setSelection(readEnquirySelection()), [])
 
   function select(next: EnquirySelection) {
     const service = next.service === customDevelopment.id

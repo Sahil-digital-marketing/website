@@ -1,3 +1,4 @@
+ 'use client'
 import { useEffect, useState } from 'react'
 import { ReaderDialog } from '../components/ReaderDialog'
 import { SiteFooter } from '../components/SiteFooter'

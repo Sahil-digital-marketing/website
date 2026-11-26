@@ -4,29 +4,48 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --mode development",
-    "build": "tsc --noEmit && vite build --mode production",
+    "dev": "vite dev",
+    "build": "vite build",
     "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "check:compat": "vinext check",
     "check:homepage": "node tools/check-homepage.mjs",
     "check:services": "node tools/check-homepage.mjs --services",
     "check:process": "node tools/check-homepage.mjs --process",
-    "preview": "vite preview"
+    "check:security": "node tools/check-security.mjs",
+    "check:routes": "node tools/check-routes.mjs",
+    "deploy": "npm run build && vinext-cloudflare deploy",
+    "deploy:mail": "wrangler deploy --cwd server",
+    "dev:vinext": "vite dev --port 3001",
+    "build:vinext": "vite build",
+    "start:vinext": "vite preview",
+    "deploy:vinext": "vinext-cloudflare deploy"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.5",
     "@fontsource-variable/sora": "^5.2.5",
+    "@vinext/cloudflare": "^1.4.0",
     "gsap": "^3.15.1",
+    "jose": "^6.0.0",
     "lenis": "^1.3.27",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "next": "^16.4.6",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-server-dom-webpack": "latest",
+    "vinext": "^1.4.6"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "beta",
+    "@cloudflare/workers-types": "^5.20261123.1",
     "@tailwindcss/vite": "^4.3.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "@vitejs/plugin-rsc": "latest",
+    "cf": "latest",
     "tailwindcss": "^4.3.5",
     "typescript": "^5.9.0",
-    "vite": "^7.0.0"
+    "vite": "^8.3.8",
+    "wrangler": "^4.0.0"
   }
 }

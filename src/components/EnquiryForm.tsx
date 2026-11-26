@@ -1,9 +1,10 @@
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { services } from '../data/landing'
 import { ArrowIcon } from './ArrowIcon'
 import { findWebsitePackage, formatPrice, pricingNote, websiteCategories } from '../data/websitePackages'
 import { customDevelopment } from '../data/customDevelopment'
 import type { EnquirySelection } from './EnquiryContext'
+import { Turnstile } from './Turnstile'
 
 type EnquiryFormProps = {
   selection: EnquirySelection
@@ -13,19 +14,55 @@ type EnquiryFormProps = {
 export function EnquiryForm({ selection, onSelectionChange }: EnquiryFormProps) {
   const formId = useId()
   const [formStatus, setFormStatus] = useState('')
+  const [pending, setPending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [formAvailable, setFormAvailable] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
+  const token = useRef('')
+  const submissionKey = useRef('')
+  const submitting = useRef(false)
+  const onToken = useCallback((next: string) => { token.current = next }, [])
   const { service, packageId } = selection
   const selectedPackage = service === 'web' ? findWebsitePackage(packageId ?? null) : undefined
   const isCustomProject = service === 'web' && packageId === customDevelopment.packageId
   const selectedTitle = isCustomProject ? customDevelopment.title : services.find(item => item.id === service)?.title ?? ''
   useEffect(() => setFormStatus(''), [service, packageId])
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setFormStatus('Your details are complete. This preview has not sent or saved your enquiry.')
+    if (submitting.current || sent) return
+    if (!token.current) { setFormStatus('Please complete the security check.'); return }
+    submitting.current = true
+    setPending(true)
+    setFormStatus('Saving your enquiry…')
+    const fields = new FormData(event.currentTarget)
+    if (!submissionKey.current) submissionKey.current = crypto.randomUUID()
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submissionKey: submissionKey.current, service, packageId: packageId || '',
+          name: fields.get('name'), email: fields.get('email'), company: fields.get('company'),
+          phone: fields.get('phone'), project: fields.get('project'), budget: fields.get('budget'),
+          timeline: fields.get('timeline'), turnstileToken: token.current,
+        }),
+      })
+      const result = await response.json() as { error?: string, reference?: string }
+      if (!response.ok) throw new Error(result.error || 'Could not save your enquiry.')
+      setSent(true)
+      setFormStatus(`Thank you. Your enquiry was saved. Reference: ${result.reference}`)
+    } catch (error) {
+      setFormStatus(`${error instanceof Error ? error.message : 'Could not save your enquiry.'} Please try again.`)
+      token.current = ''
+      setResetKey(value => value + 1)
+    } finally {
+      submitting.current = false
+      setPending(false)
+    }
   }
 
   return (
-    <form className="enquiry-form" onSubmit={handleSubmit} onChange={() => setFormStatus('')} aria-describedby={`${formId}-preview-note`}>
+    <form className="enquiry-form" onSubmit={handleSubmit} onChange={() => { if (!sent) setFormStatus('') }} aria-describedby={`${formId}-preview-note`}>
       <div className="enquiry-form-heading"><h3>Let’s discuss your project.</h3><p>Choose a service, share your requirements and tell us the budget you have in mind.</p></div>
       <label htmlFor={`${formId}-service`}>
         What can we help with?
@@ -78,10 +115,11 @@ export function EnquiryForm({ selection, onSelectionChange }: EnquiryFormProps) 
       </div>
       <div className="form-foot">
         <p className="form-note" id={`${formId}-preview-note`}>
-          Preview form: enquiry delivery is not connected yet, so no details are sent or saved.
+          We use your details to review your request, contact you and send a confirmation email. Read our <a href="/privacy">privacy notice</a>.
         </p>
-        <button className="button button-primary" type="submit">
-          Review enquiry <ArrowIcon />
+        <Turnstile onToken={onToken} onAvailability={setFormAvailable} resetKey={resetKey} />
+        <button className="button button-primary" type="submit" disabled={pending || sent || !formAvailable}>
+          {pending ? 'Saving…' : sent ? 'Enquiry received' : 'Send enquiry'} <ArrowIcon />
         </button>
       </div>
       <p className="form-status" role="status">{formStatus}</p>

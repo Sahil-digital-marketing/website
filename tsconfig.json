@@ -14,7 +14,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "preserve",
+    "plugins": [{ "name": "next" }],
+    "types": ["@cloudflare/workers-types", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "app", "server", "next-env.d.ts", ".next/types/**/*.ts", "worker-configuration.d.ts"]
 }

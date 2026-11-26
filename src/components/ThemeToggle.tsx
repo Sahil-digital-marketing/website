@@ -4,6 +4,7 @@ type Theme = 'light' | 'dark'
 const themeStorageKey = 'sahil-theme'
 
 function getPreferredTheme(): Theme {
+  if (typeof window === 'undefined') return 'light'
   try {
     const storedTheme = window.localStorage.getItem(themeStorageKey)
     if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme
@@ -14,9 +15,12 @@ function getPreferredTheme(): Theme {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(getPreferredTheme)
+  const [theme, setTheme] = useState<Theme | null>(null)
+
+  useEffect(() => setTheme(getPreferredTheme()), [])
 
   useEffect(() => {
+    if (!theme) return
     document.documentElement.classList.toggle('dark', theme === 'dark')
     document.documentElement.style.colorScheme = theme
     try {

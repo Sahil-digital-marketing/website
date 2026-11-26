@@ -32,7 +32,7 @@ export async function runProcessChecks({ send, evaluate, click, waitFor, screens
       assert.deepEqual(metrics.undersized, [], `${theme} ${width}: 44px controls`)
       assert.equal(metrics.title, 'Our Process | SAHIL Digital Marketing')
       assert.equal(await evaluate('document.querySelector("meta[name=description]").content'), 'See how SAHIL Digital Marketing moves from discovery and an agreed plan to delivery, review and the next informed step.')
-      assert.equal(await evaluate('[...document.querySelectorAll(".main-nav a")].find(a => a.pathname === "/process")?.getAttribute("aria-current")'), 'page')
+      await waitFor(() => evaluate('[...document.querySelectorAll(".main-nav a")].find(a => a.pathname === "/process")?.getAttribute("aria-current") === "page"'), 'active process navigation after hydration')
       assert.equal(await evaluate('document.querySelectorAll(".enquiry-form").length'), 1)
 
       await screenshot(`${theme}-${width}-hero`)
