@@ -152,28 +152,34 @@ try {
       const height = width === 375 ? 812 : width === 768 ? 1024 : 900
       await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false })
       await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: theme }, { name: 'prefers-reduced-motion', value: 'no-preference' }] })
-      if (results.length) await evaluate('localStorage.clear()')
+      if (results.length) await evaluate('localStorage.clear(); sessionStorage.removeItem("sahil-motion-paused")')
       await send('Page.navigate', { url })
-      await waitFor(() => evaluate('Boolean(document.querySelector(".motion-toggle"))'), '3D scene')
+      await waitFor(() => evaluate('Boolean(document.querySelector(".eagle-canvas.is-ready"))'), '3D scene')
       await evaluate('document.fonts.ready.then(() => true)')
       await delay(2800) // Let the eagle assemble and the hero copy finish entering.
       await checkImages()
+      const editorialImages = await evaluate(`({ hero: Boolean(document.querySelector('.hero > .section-photo img')?.naturalWidth), about: Boolean(document.querySelector('.about-photo img')?.naturalWidth), services: document.querySelectorAll('.service-row-art img').length, notes: document.querySelectorAll('.note-art img').length, contact: getComputedStyle(document.querySelector('.contact-photo')).display !== 'none' })`)
+      assert.deepEqual(editorialImages, { hero: true, about: true, services: 2, notes: 5, contact: true }, 'Homepage editorial photography is present')
       const metrics = await evaluate(`({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light', headings: document.querySelectorAll('h1').length, sections: document.querySelectorAll('main > section').length, canvas: document.querySelector('canvas').classList.contains('is-ready'), links: [...document.querySelectorAll('a[href^="#"]')].every(a => document.getElementById(a.getAttribute('href').slice(1))) })`)
       assert.ok(metrics.scrollWidth <= width, `Overflow at ${width} ${theme}`)
       assert.equal(metrics.theme, theme)
       assert.equal(metrics.headings, 1)
       assert.ok(metrics.links, 'Anchor destinations exist')
       assert.ok(metrics.canvas, '3D rendered')
+      assert.ok(await evaluate(`(() => { const r = document.querySelector('.contact-aside').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth })()`), 'Contact copy stays in viewport')
+      assert.ok(await evaluate(`(() => { const r = document.querySelector('.enquiry-form').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth })()`), 'Contact form stays in viewport')
+      assert.ok(await evaluate(`(() => { const label = document.querySelector('.contact-topline .section-kicker'); return label.scrollWidth <= label.clientWidth })()`), 'Contact kicker does not clip')
       assert.equal(await evaluate('document.querySelector("h1").textContent'), 'The signature of success.')
       assert.ok(await evaluate(`['description', 'og:description', 'twitter:description'].every(name => document.querySelector('meta[name="'+name+'"],meta[property="'+name+'"]').content === document.querySelector('.hero-summary').textContent)`), 'Exact description metadata')
       assert.ok(await evaluate(`document.title.endsWith('The signature of success.') && document.querySelector('meta[property="og:title"]').content === document.title && document.querySelector('meta[name="twitter:title"]').content === document.title`), 'Exact title metadata')
-      assert.ok(await evaluate(`(() => {
+      const heroSeparation = await evaluate(`(() => {
         const a = document.querySelector('.hero-copy').getBoundingClientRect();
-        return ['.eagle-stage','.hero-cards'].every(selector => {
+        return ['.eagle-stage'].every(selector => {
           const b = document.querySelector(selector).getBoundingClientRect();
           return a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
         });
-      })()`), 'Hero copy is separated from eagle and cards')
+      })()`)
+      assert.ok(heroSeparation, 'Hero copy is separated from eagle')
       if (width === 375) {
         await click('.menu-toggle')
         await waitFor(() => evaluate('document.querySelector(".menu-toggle").getAttribute("aria-expanded") === "true"'), 'menu opens')
@@ -184,9 +190,9 @@ try {
         assert.equal(await evaluate('document.activeElement.className'), 'menu-toggle')
         assert.equal(await evaluate('document.querySelector(".mobile-navigation-panel")'), null)
       }
-      await click('.motion-toggle')
-      await waitFor(() => evaluate('document.querySelector(".motion-toggle").getAttribute("aria-pressed") === "true"'), 'motion pauses')
-      assert.equal(await evaluate('document.querySelector(".motion-toggle").getAttribute("aria-pressed")'), 'true')
+      await click('.motion-control')
+      await waitFor(() => evaluate('document.querySelector(".motion-control").getAttribute("aria-pressed") === "true"'), 'motion pauses')
+      assert.equal(await evaluate('document.querySelector(".motion-control").getAttribute("aria-pressed")'), 'true')
       await evaluate('scrollTo({top:0,behavior:"instant"})')
       await screenshot(`${theme}-${width}-hero`)
       // Trigger the real scroll reveals before section captures.
@@ -197,7 +203,7 @@ try {
       await delay(1500)
       await evaluate('scrollTo({top:0,behavior:"instant"})')
       await screenshot(`${theme}-${width}`)
-      for (const selector of ['.vision', '#services', '#process', '#explore', '#notes', '#contact', '.site-footer']) {
+      for (const selector of ['#about', '.vision', '#services', '#process', '#explore', '#notes', '#contact', '.site-footer']) {
         await sectionScreenshot(selector, `${theme}-${width}-${selector.replace(/[.#]/g, '')}`)
       }
       const undersized = await evaluate(`([...document.querySelectorAll('a,button,input,select,textarea')].filter(el => {
@@ -238,13 +244,13 @@ try {
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
   await send('Page.navigate', { url })
   await waitFor(() => evaluate('Boolean(document.querySelector(".theme-toggle"))'), 'theme control')
+  const beforeTheme = await evaluate('document.documentElement.classList.contains("dark")')
   await click('.theme-toggle')
-  await waitFor(() => evaluate('localStorage.getItem("sahil-theme") === "dark"'), 'theme changes')
-  assert.equal(await evaluate('localStorage.getItem("sahil-theme")'), 'dark')
+  await waitFor(() => evaluate(`localStorage.getItem("sahil-theme") === ${JSON.stringify(beforeTheme ? 'light' : 'dark')}`), 'theme changes')
   await send('Page.reload')
   await waitFor(() => evaluate('Boolean(document.querySelector(".theme-toggle"))'), 'persisted theme')
   await delay(1200) // Next.js renders controls before their client handlers hydrate.
-  assert.equal(await evaluate('document.documentElement.classList.contains("dark")'), true)
+  assert.equal(await evaluate('document.documentElement.classList.contains("dark")'), !beforeTheme)
 
   // Choosing a service updates the panel and opens its detail page.
   await click('#tab-growth')
@@ -255,7 +261,7 @@ try {
   await delay(1600) // let the smooth anchor scroll to #contact finish first
   await evaluate('scrollTo({top:0,behavior:"instant"})')
   await delay(300)
-  await click('.hero-card')
+  await click('.note-tile--1 button')
   await waitFor(() => evaluate('document.querySelector("dialog.reader").open'), 'reader opens')
   await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 })
@@ -269,7 +275,7 @@ try {
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] })
   await evaluate('scrollTo({top:0,behavior:"instant"})')
   assert.equal(await evaluate('getComputedStyle(document.querySelector(".hero-copy h1")).animationName'), 'none')
-  assert.equal(await evaluate('getComputedStyle(document.querySelector(".motion-toggle")).display'), 'none')
+  assert.equal(await evaluate('getComputedStyle(document.querySelector(".intro-sequence") || document.querySelector(".ambient-scene")).display'), 'none')
   await screenshot('reduced-motion')
   await evaluate('localStorage.clear()')
   await send('Page.addScriptToEvaluateOnNewDocument', { source: `const getContext = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function(type,...args) { return type === 'webgl2' ? null : getContext.call(this,type,...args) }` })

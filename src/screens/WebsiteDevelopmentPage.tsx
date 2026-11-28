@@ -1,10 +1,12 @@
  'use client'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { EnquiryLink } from '../components/EnquiryLink'
+import { EditorialImage } from '../components/EditorialImage'
 import { ServicePageLayout } from '../components/ServicePageLayout'
 import { WebsitePreview } from '../components/WebsitePreview'
 import { formatPrice, pricingNote, websiteCategories } from '../data/websitePackages'
 import { CustomDevelopment } from '../components/CustomDevelopment'
+import { pageImages } from '../data/homeImages'
 
 export function WebsiteDevelopmentPage() {
   return (
@@ -18,7 +20,7 @@ export function WebsiteDevelopmentPage() {
           <p className="pricing-note">{pricingNote}</p>
           <a className="button button-primary" href="#packages">Explore packages <ArrowIcon direction="down" /></a>
         </div>
-        <WebsitePreview kind="business" />
+        <EditorialImage className="web-hero-photo" image={pageImages.webDetail} sizes="(max-width: 900px) 94vw, 42vw" loading="eager" />
       </section>
       <section className="website-types" aria-labelledby="website-types-title">
         <div className="service-section-heading"><p className="eyebrow">Built for your next step</p><h2 id="website-types-title">Find the right fit for your idea.</h2></div>

@@ -14,7 +14,7 @@ export default defineConfig({
       ASSETS: bindings.assets(),
       DB: bindings.d1({ name: "sahil-enquiries" }),
       MAIL_QUEUE: bindings.queue({ name: "sahil-mail" }),
-      MAIL_ENABLED: bindings.text(process.env.MAIL_ENABLED || "false"),
+      MAIL_ENABLED: bindings.text(process.env.MAIL_ENABLED ?? (process.env.NODE_ENV === "production" ? "true" : "false")),
       TURNSTILE_SITE_KEY: bindings.text(process.env.TURNSTILE_SITE_KEY || "0x4AAAAAAGUM7hLPvXFHyqcM"),
       TURNSTILE_SECRET: bindings.secret(),
       ADMIN_JWT_SECRET: bindings.secret(),

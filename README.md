@@ -1,62 +1,35 @@
 # SAHIL Digital Marketing
 
-Marketing website built with React, TypeScript, Vite, and Tailwind CSS v4.3.
+Next.js App Router and vinext marketing site on Cloudflare Workers, with TypeScript and Tailwind CSS v4.3.
 
 ## Run locally
+
+Use Node 22.23+ or 24.22+ for the Cloudflare Vite plugin.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-`npm run typecheck` checks TypeScript. `npm run build` creates `dist/`;
-`npm run preview` serves that production build locally.
+For a production preview, run `npm run build` and then `npm run preview`. Local Worker secrets belong in ignored `.dev.vars`. Apply `server/schema.sql` to the local D1 database before testing form delivery or authenticated admin actions.
 
-## Homepage ownership
+Production builds enable enquiry and admin-code mail by default. `MAIL_ENABLED=false` pauses both paths; local development defaults to disabled. Delivery requires the `sahil-mail` queue consumer, its SMTP secrets, the D1 database and Turnstile bindings. Set `MAIL_ENABLED` explicitly for a one-off build only when changing this behavior intentionally.
 
-- `App.tsx` selects the page for the URL; `pages/LandingPage.tsx` composes sections.
-- `src/components/` owns navigation, branding, controls, the form, the reader dialog, and the eagle presentation.
-- `src/features/landing/` owns page sections and the particle eagle renderer.
-- `src/data/landing.ts` owns services (with their detail), about copy, field notes, process, and contact links.
-- `src/data/websitePackages.ts` and `src/data/growthPackages.ts` own the two current service offers. See `docs/services.md` for scope and enquiry behavior.
-- `src/lib/` owns the motion layer: Lenis smooth scroll driven by GSAP's ticker, scroll reveals, and the magnetic CTA.
-- `src/styles.css` owns brand tokens, light/dark themes, responsive layout, and CSS motion.
-- `public/brand/` holds the approved SAHIL logo (colour and one-colour), the eagle mark, favicons, and the share image.
+## Site structure
 
-## Design direction: Midnight Chrome
+- `app/` owns the eight page routes, metadata, and API route handlers.
+- `src/screens/` and `src/features/landing/` own public page content and sections.
+- `src/components/` owns navigation, the theme and motion controls, enquiry form, dialogs, and visual scenes.
+- `src/data/` owns the two current service offers, packages, field notes, and contact information.
+- `src/styles.css` retains the base and responsive rules; `src/reference-theme.css` applies the supplied blue and cyan design across every route.
+- `server/` owns D1 enquiries, authentication, and queued mail delivery. Public pages use the existing `/api/enquiries` endpoint.
 
-An editorial "printed annual" layout (12-column grid, an axis at about 42%, whole
-sections in flat colour) on the Cobalt Horizon palette, with the logo's chrome
-carried by the hero. Sora and Inter only. Square media, pill buttons, no
-gradients, glass, or shadows at rest. Service pages use small section labels and bordered package comparisons.
+## Design and motion
 
-The hero is the SAHIL eagle drawn by ~15,000 WebGL2 points sampled from the
-logo mark, keeping its own chrome and blue. The points gather on load, part
-around the pointer, and drift away as the hero scrolls. The renderer is loaded
-separately, caps pixel density, pauses offscreen or when the tab is hidden, and
-releases its graphics resources on unmount. Reduced motion shows the settled
-eagle without travel; if WebGL fails, the logo mark itself is shown.
+The supplied `docs/index (1).html` is the visual reference. The site uses locally served Poppins headings and Inter body text, a dark blue and cyan mode, and a paired light mode. The homepage includes a skippable first-visit intro, WebGL eagle, scroll progress, orbit and network scenes, a horizontal desktop process sequence, service artwork, and filterable field notes. Other pages share the visual system and use lighter entrance motion. Decorative motion can be paused; reduced-motion visitors see static content and the eagle fallback.
 
-Motion dependencies: `gsap` (ScrollTrigger, SplitText; GSAP Standard License,
-free for commercial use) and `lenis` (MIT). Everything is skipped under
-`prefers-reduced-motion`.
+The current Website Development and Digital Growth offers, package prices, enquiry selection, and admin workflow remain the source of truth. The reference's illustrative performance numbers and Supabase form are not used as business claims or integrations. Sample team profiles and address information on the About page are still labelled as samples; approved real material should replace them before publication.
 
-## Content still needed
+## Checks
 
-Enquiry delivery is not connected: native field validation and local review work,
-but no form details are transmitted or saved. Field-note and contact photographs
-are generated illustrative scenes served locally; they do not represent studio staff or client work. Contact details, "Udyam MSME" wording,
-service deliverables and field-note copy are
-carried over from the current site. Website package pricing and scope follow the supplied Price Sheet.pdf. No portfolio
-work, testimonials, or statistics have been invented.
-
-## Browser checks
-
-After building, run `npm run check:homepage` with Node 22+ and Chrome installed
-(or set `CHROME_PATH` to Chrome/Chromium). The script launches an isolated
-headless browser and serves the production build on a temporary local port.
-
-It checks both themes at 375, 768, 1024, and 1440 pixels; anchor links, the
-mobile menu and Escape, theme persistence, animation pause, FAQ removal,
-form validation, reduced motion, rendering fallback, and runtime exceptions.
-Screenshots and the JSON report are written to ignored `.artifacts/homepage/`.
+Run `npm run typecheck`, `npm run check:compat`, `npm run build`, `npm run preview`, and the `check:homepage`, `check:services`, `check:process`, `check:routes`, and `check:security` scripts. Browser checks need Chrome and write screenshots and results to ignored `.artifacts/` folders. They cover both themes at 375, 768, 1024, and 1440 pixels, plus navigation, forms, keyboard focus, reduced motion, and rendering fallbacks.

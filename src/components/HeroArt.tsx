@@ -12,6 +12,12 @@ export function HeroArt() {
   useEffect(() => {
     let cancelled = false
     let scene: EagleScene | undefined
+    const syncMotion = (event: Event) => {
+      const paused = (event as CustomEvent<{ paused: boolean }>).detail.paused
+      sceneRef.current?.setPaused(paused)
+      setIsPaused(paused)
+    }
+    window.addEventListener('sahil-motion-change', syncMotion)
 
     async function loadScene() {
       try {
@@ -28,6 +34,7 @@ export function HeroArt() {
         })
         if (cancelled) return scene.dispose()
         sceneRef.current = scene
+        scene.setPaused(document.documentElement.classList.contains('motion-paused'))
         setIsReady(true)
       } catch {
         if (!cancelled) setIsReady(false)
@@ -36,16 +43,11 @@ export function HeroArt() {
     void loadScene()
     return () => {
       cancelled = true
+      window.removeEventListener('sahil-motion-change', syncMotion)
       scene?.dispose()
       sceneRef.current = null
     }
   }, [])
-
-  function toggleMotion() {
-    const paused = !isPaused
-    sceneRef.current?.setPaused(paused)
-    setIsPaused(paused)
-  }
 
   return (
     <div className="hero-art">
@@ -53,14 +55,7 @@ export function HeroArt() {
         {!isReady && <img className="eagle-still" src={markUrl} width="452" height="511" alt="" />}
         <canvas ref={canvasRef} className={isReady ? 'eagle-canvas is-ready' : 'eagle-canvas'} aria-hidden="true" />
       </div>
-      {isReady && (
-        <button className="motion-toggle" type="button" aria-pressed={isPaused} onClick={toggleMotion}>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-            {isPaused ? <path d="m3 1 8 5-8 5Z" /> : <path d="M2 1h3v10H2zm5 0h3v10H7z" />}
-          </svg>
-          {isPaused ? 'Play motion' : 'Pause motion'}
-        </button>
-      )}
+      {isReady && <span className="visually-hidden">{isPaused ? 'Eagle motion paused' : 'Eagle motion playing'}</span>}
     </div>
   )
 }

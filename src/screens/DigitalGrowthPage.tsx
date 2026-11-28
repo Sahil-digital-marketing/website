@@ -3,7 +3,7 @@ import { ArrowIcon } from '../components/ArrowIcon'
 import { EditorialImage } from '../components/EditorialImage'
 import { ServicePageLayout } from '../components/ServicePageLayout'
 import { growthPackages, growthPlanNote, growthQuoteHref } from '../data/growthPackages'
-import { homeImages } from '../data/homeImages'
+import { pageImages } from '../data/homeImages'
 
 export function DigitalGrowthPage() {
   return (
@@ -19,7 +19,7 @@ export function DigitalGrowthPage() {
             <a className="text-link" href="#plans">Compare plans <ArrowIcon direction="down" /></a>
           </div>
         </div>
-        <EditorialImage className="growth-hero-image" image={homeImages.social} sizes="(max-width: 900px) 94vw, 42vw" loading="eager" />
+        <EditorialImage className="growth-hero-image" image={pageImages.growthDetail} sizes="(max-width: 900px) 94vw, 42vw" loading="eager" />
       </section>
 
       <section className="growth-intro" aria-labelledby="growth-intro-title">

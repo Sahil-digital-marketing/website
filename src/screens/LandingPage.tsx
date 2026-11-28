@@ -38,7 +38,7 @@ export function LandingPage() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <SiteHeader />
       <main id="main-content">
-        <HeroSection onOpenNote={setOpenNote} />
+        <HeroSection />
         <AboutSection />
         <VisionSection />
         <ServicesSection />

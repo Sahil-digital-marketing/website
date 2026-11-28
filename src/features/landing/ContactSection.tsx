@@ -5,6 +5,7 @@ import { homeImages } from '../../data/homeImages'
 import { contactLinks } from '../../data/landing'
 import { useReveal } from '../../lib/useReveal'
 import { useEnquiry } from '../../components/EnquiryContext'
+import { AmbientScene } from '../../components/AmbientScene'
 
 export function ContactSection() {
   const { selection, select } = useEnquiry()
@@ -13,8 +14,11 @@ export function ContactSection() {
 
   return (
     <section className="section contact" id="contact" aria-labelledby="contact-title" ref={sectionRef}>
+      <AmbientScene kind="network" />
+      <div className="contact-topline"><span className="section-kicker">LET'S CREATE SOMETHING THAT MATTERS</span><span>GET IN TOUCH / 06</span></div>
       <div className="contact-intro" data-reveal-group>
-        <h2 id="contact-title" data-reveal>Have a vision? Let us make it visible.</h2>
+        <p className="section-kicker">YOUR NEXT BIG MOVE STARTS HERE</p>
+        <h2 id="contact-title" data-reveal>Have a vision?<br /><em>Let's make it</em><br />visible.</h2>
         <p className="contact-aside" data-reveal>Tell us what you are building. Not sure where to start? That is what the first conversation is for.</p>
         <EditorialImage className="contact-photo" image={homeImages.discovery} sizes="(max-width: 900px) 44vw, 24vw" />
         <div className="contact-links" data-reveal>

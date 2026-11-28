@@ -12,11 +12,20 @@ export function MobileNavigation() {
 
   useEffect(() => {
     if (!isOpen) return
+    document.body.classList.add('menu-open')
+    document.querySelector<HTMLAnchorElement>('#mobile-navigation-panel a')?.focus()
 
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsOpen(false)
         toggleRef.current?.focus()
+      }
+      if (event.key === 'Tab') {
+        const links = [...document.querySelectorAll<HTMLElement>('#mobile-navigation-panel a, #mobile-navigation-panel button')]
+        const first = links[0]
+        const last = links[links.length - 1]
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
       }
     }
     function closeOnDesktop(event: MediaQueryListEvent) {
@@ -26,6 +35,7 @@ export function MobileNavigation() {
     document.addEventListener('keydown', closeOnEscape)
     desktop.addEventListener('change', closeOnDesktop)
     return () => {
+      document.body.classList.remove('menu-open')
       document.removeEventListener('keydown', closeOnEscape)
       desktop.removeEventListener('change', closeOnDesktop)
     }

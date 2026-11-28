@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import '../src/styles.css'
+import '../src/reference-theme.css'
 import { EnquiryProvider } from '../src/components/EnquiryContext'
 
 export const metadata: Metadata = {

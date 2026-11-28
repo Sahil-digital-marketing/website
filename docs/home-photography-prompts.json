@@ -26,5 +26,9 @@
   {
     "name": "project-discovery-session",
     "prompt": "Create one landscape 3:2 documentary editorial photograph. Candid workshop scene photographed diagonally: three people standing in front of a large whiteboard with colored sticky notes, only backs and hands, one person adding a note. Bright ordinary office, relaxed real clothing, India, natural daylight, no face identities or staff claims. Deliberately natural and unpolished: realistic texture, subtle grain, incidental imperfections, honest perspective and human anatomy. Avoid glossy commercial stock aesthetic, repeated oak desk setups, matching navy notebooks, artificial plastic surfaces. No logos, no endorsements, no client results, no watermark. This is an illustrative scene for a digital studio service page, not purported staff or client work."
+  },
+  {
+    "name": "studio-hero",
+    "prompt": "Use case: photorealistic-natural. Create a wide 3:2 cinematic documentary editorial photograph for the homepage hero of an Indian digital growth studio. A small creative team seen from behind in an authentic contemporary studio, reviewing large unbranded printed layout sheets and visual concepts pinned to a wall, a few practical desk lamps and natural work materials. Rich deep navy and cobalt ambient light with restrained cyan highlights, realistic skin and materials, natural imperfection and subtle grain, sophisticated and credible rather than glossy stock. Composition must leave the LEFT 45% very dark, quiet, and low-detail so white headline text can be placed over it. Place the recognizable human/work activity mostly in the RIGHT half, but leave enough dark negative space there for a luminous animated eagle silhouette to remain visible as an overlay. Photograph only: no eagle, no logos, no readable text, no interface mockups, no charts or fake results, no watermark. This is illustrative imagery, not a claimed portrait of real staff or clients."
   }
 ]

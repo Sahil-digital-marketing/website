@@ -1,6 +1,4 @@
 import { useRef } from 'react'
-import { SectionPhoto } from '../../components/SectionPhoto'
-import { homeImages } from '../../data/homeImages'
 import { about } from '../../data/landing'
 import { useReveal } from '../../lib/useReveal'
 
@@ -9,9 +7,9 @@ export function VisionSection() {
   useReveal(sectionRef)
 
   return (
-    <section className="colour-page vision photo-field" aria-labelledby="vision-title" ref={sectionRef}>
-      <SectionPhoto image={homeImages.discovery} />
+    <section className="colour-page vision" aria-labelledby="vision-title" ref={sectionRef}>
       <div className="section vision-inner" data-reveal-group>
+        <p className="section-kicker">OUR DIRECTION</p>
         <h2 id="vision-title" data-reveal>Built to rise above.</h2>
         <div className="vision-pair">
           <div data-reveal>

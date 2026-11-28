@@ -9,7 +9,7 @@ The public offer has two main services:
 
 Website prices and inclusions live in `src/data/websitePackages.ts`. All published prices are starting prices, with a complexity qualification. The reusable enquiry form can preselect one of the nine website packages or a custom development project. A legacy `?service=custom` link selects Website Development and the custom option.
 
-Digital Growth inclusions and WhatsApp links live in `src/data/growthPackages.ts`. Each plan's quote button opens WhatsApp with the selected tier in the message. The shared form remains a preview; it does not send or save submissions. No monthly Growth fee is invented.
+Digital Growth inclusions and WhatsApp links live in `src/data/growthPackages.ts`. Each plan's quote button opens WhatsApp with the selected tier in the message. The shared form posts to `/api/enquiries`, which verifies Turnstile and saves the enquiry in D1 when the local or production bindings are configured. No monthly Growth fee is invented.
 
 The production build emits route-specific HTML and metadata for both detail pages. Direct URLs and trailing slashes work on static servers with directory-index support.
 

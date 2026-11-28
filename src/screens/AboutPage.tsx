@@ -1,9 +1,11 @@
  'use client'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { EnquiryLink } from '../components/EnquiryLink'
+import { EditorialImage } from '../components/EditorialImage'
 import { ServicePageLayout } from '../components/ServicePageLayout'
 import { aboutPage } from '../data/aboutPage'
 import { about, contactLinks } from '../data/landing'
+import { pageImages } from '../data/homeImages'
 
 export function AboutPage() {
   return (
@@ -17,6 +19,7 @@ export function AboutPage() {
             <a className="text-link" href="#our-story">Get to know us <ArrowIcon direction="down" /></a>
           </div>
         </div>
+        <EditorialImage className="about-hero-photo" image={pageImages.aboutHero} sizes="(max-width: 900px) 94vw, 88vw" loading="eager" />
       </section>
 
       <section className="about-page-section about-page-story" id="our-story" aria-labelledby="about-story-title">
@@ -26,6 +29,7 @@ export function AboutPage() {
           <p>{aboutPage.introduction}</p>
           <p>{about.philosophy}</p>
           <a className="text-link" href="/services">Explore our services <ArrowIcon /></a>
+          <EditorialImage className="about-story-photo" image={pageImages.aboutStory} sizes="(max-width: 900px) 94vw, 66vw" />
         </div>
       </section>
 

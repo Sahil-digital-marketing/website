@@ -4,7 +4,7 @@ import path from 'node:path'
 
 export async function runServiceChecks({ send, evaluate, click, waitFor, screenshot, sectionScreenshot, checkImages, keypress, delay, url, output }) {
   const results = []
-  const routes = ['/services', '/services/website-development', '/services/digital-growth']
+  const routes = ['/services', '/services/website-development', '/services/digital-growth', '/about']
   async function navigate(route, selector) {
     await evaluate('window.__serviceCheckLeaving = true')
     await send('Page.navigate', { url: url + route })
@@ -17,7 +17,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
       await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: theme }, { name: 'prefers-reduced-motion', value: 'no-preference' }] })
       for (const route of routes) {
         if (results.length) await evaluate('localStorage.clear()')
-        await navigate(route, route === routes[0] ? '#catalogue-title' : route === routes[1] ? '#website-page-title' : '#growth-page-title')
+        await navigate(route, route === routes[0] ? '#catalogue-title' : route === routes[1] ? '#website-page-title' : route === routes[2] ? '#growth-page-title' : '#about-page-title')
         await checkImages()
         assert.equal(await evaluate('document.querySelectorAll(".enquiry-form").length'), 1, 'One shared form on each page')
         assert.equal(await evaluate('document.querySelectorAll("[name=service] > option").length'), 3, 'Two services plus placeholder')
@@ -27,9 +27,9 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
         assert.equal(metrics.h1, 1)
         assert.equal(metrics.anchors, true)
         assert.deepEqual(metrics.undersized, [], '44px controls')
-        assert.ok(metrics.title.includes(route === routes[0] ? 'Our Services' : route === routes[1] ? 'Website Development' : 'Digital Growth'))
+        assert.ok(metrics.title.includes(route === routes[0] ? 'Our Services' : route === routes[1] ? 'Website Development' : route === routes[2] ? 'Digital Growth' : 'About'))
         assert.equal(await evaluate(`document.querySelector('meta[property="og:title"]').content`), metrics.title)
-        await screenshot(`${theme}-${width}-${route === routes[0] ? 'overview' : route === routes[1] ? 'website' : 'growth'}-hero`)
+        await screenshot(`${theme}-${width}-${route === routes[0] ? 'overview' : route === routes[1] ? 'website' : route === routes[2] ? 'growth' : 'about'}-hero`)
         if (route === routes[0]) {
           assert.equal(await evaluate('document.querySelectorAll(".website-feature").length'), 2)
           assert.equal(await evaluate('document.querySelector(".service-catalogue > article").id'), 'web', 'Website development is listed first')
@@ -43,11 +43,14 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
           assert.ok(await evaluate('[...document.querySelectorAll(".pricing-note")].every(el=>parseFloat(getComputedStyle(el).fontSize)>=14 && getComputedStyle(el).visibility==="visible")'), 'Readable price qualification')
           await click('.website-type[href="#business"]')
           await waitFor(() => evaluate('location.hash === "#business"'), 'category jump')
-        } else {
+        } else if (route === routes[2]) {
           assert.deepEqual(await evaluate('[...document.querySelectorAll(".growth-plan h3")].map(el=>el.textContent)'), ['Basic','Popular','Premium'])
           assert.deepEqual(await evaluate('[...document.querySelectorAll(".growth-plan .service-inclusions li")].map(el=>el.closest("article").id).reduce((counts,id)=>(counts[id]=(counts[id]||0)+1,counts),{})'), {basic:7,popular:8,premium:9})
           assert.equal(await evaluate('document.querySelectorAll(".growth-plan .package-price").length'), 0, 'Growth fees are not invented')
           await sectionScreenshot('.growth-plans', `${theme}-${width}-growth-plans`)
+        } else {
+          assert.equal(await evaluate('document.querySelectorAll(".about-hero-photo, .about-story-photo").length'), 2)
+          await sectionScreenshot('.about-page-story', `${theme}-${width}-about-story`)
         }
         if (route === routes[1]) await sectionScreenshot('.custom-development', `${theme}-${width}-website-custom`)
         if (width === 375) {
@@ -58,7 +61,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
         }
         results.push({ theme, width, route, ...metrics })
       }
-      console.log(`${theme} ${width}: three service routes, layout, prices, links and controls passed`)
+      console.log(`${theme} ${width}: service and About routes, layout, prices, links and controls passed`)
     }
   }
 
@@ -108,7 +111,7 @@ export async function runServiceChecks({ send, evaluate, click, waitFor, screens
     await send('Page.reload')
     await waitFor(() => evaluate('Boolean(document.querySelector(".service-page"))'), 'refresh trailing slash')
     const html = await (await fetch(url + route)).text()
-    assert.ok(html.includes(route === routes[0] ? '<title>Our Services' : route === routes[1] ? '<title>Website Development &amp; Packages' : '<title>Digital Growth'), 'Static HTML has route metadata')
+    assert.ok(html.includes(route === routes[0] ? '<title>Our Services' : route === routes[1] ? '<title>Website Development &amp; Packages' : route === routes[2] ? '<title>Digital Growth' : '<title>About'), 'Static HTML has route metadata')
   }
   await click('.brand')
   await waitFor(() => evaluate('Boolean(document.querySelector(".hero"))'), 'Logo returns home')
